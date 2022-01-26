@@ -2,8 +2,8 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::str::FromStr;
 
+use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
-use serde::de::{self, Visitor, MapAccess};
 use void::Void;
 
 pub fn string_or_struct<'de, T, D>(deserializer: D) -> Result<T, D::Error>

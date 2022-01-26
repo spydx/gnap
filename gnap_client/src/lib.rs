@@ -1,12 +1,11 @@
-use uuid::Uuid;
 use model::grant::*;
+use uuid::Uuid;
 
 fn generate_nonce() -> String {
     Uuid::new_v4().to_simple().to_string()
 }
 
 pub fn make_request() -> GrantRequest {
-
     let client_id = "7e057b0c-17e8-4ab4-9260-2b33f32b2cce".to_owned();
     let ac_foo = AccessRequest::Reference("foo".to_owned());
     let ac_ref = AccessRequest::Value {

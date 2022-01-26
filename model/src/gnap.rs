@@ -1,10 +1,9 @@
-
 //! Basic GNAP interaction models
 //!
 //! Includes models for presenting .well-known configs.
 //!
-use serde::{Serialize, Deserialize};
 use redis::{RedisWrite, ToRedisArgs};
+use serde::{Deserialize, Serialize};
 
 use super::CachePath;
 
@@ -51,25 +50,22 @@ pub struct GnapOptions {
     /// (Section 2.2) of the request.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assertions_supported: Option<Assertions>,
-    }
+}
 
 impl GnapOptions {
     pub fn new(base: &str) -> Self {
         GnapOptions {
             service_endpoints: GnapServiceEndpoints {
-            grant_request_endpoint: format!("{}/gnap/tx",base),
-            introspection_endpoint: format!("{}/gnap/introspect",base),
-            resource_registration_endpoint: format!("{}/gnap/resource",base)
+                grant_request_endpoint: format!("{}/gnap/tx", base),
+                introspection_endpoint: format!("{}/gnap/introspect", base),
+                resource_registration_endpoint: format!("{}/gnap/resource", base),
             },
-            token_formats_supported: vec![
-                "jwt".to_owned(),
-                "paseto".to_owned()
-            ],
+            token_formats_supported: vec!["jwt".to_owned(), "paseto".to_owned()],
             interaction_start_modes_supported: None,
             interaction_finish_methods_supported: None,
             key_proofs_supported: None,
             subject_formats_supported: None,
-            assertions_supported: None
+            assertions_supported: None,
         }
     }
 }
@@ -85,6 +81,8 @@ impl ToRedisArgs for &GnapOptions {
     where
         W: ?Sized + RedisWrite,
     {
-        out.write_arg_fmt(serde_json::to_string(self).expect("Can't serialize GnapOptions as string"))
+        out.write_arg_fmt(
+            serde_json::to_string(self).expect("Can't serialize GnapOptions as string"),
+        )
     }
 }

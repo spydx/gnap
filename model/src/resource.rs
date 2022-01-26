@@ -7,12 +7,11 @@
 //! This file should be used as a pattern whenever there is a Vec<String_or_Struct>
 //! variant pattern.
 
-use serde::{Deserialize, Serialize};
 use redis::{RedisWrite, ToRedisArgs};
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
-use void::Void;
 use uuid::Uuid;
-
+use void::Void;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct ResourceEntitlement {
@@ -23,7 +22,7 @@ pub struct ResourceEntitlement {
     resource_type: String,
     actions: Option<Vec<String>>,
     locations: Option<Vec<String>>,
-    data_types: Option<Vec<String>>
+    data_types: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -35,9 +34,8 @@ pub struct ResourceRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     locations: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    data_types: Option<Vec<String>>
+    data_types: Option<Vec<String>>,
 }
-
 
 impl FromStr for ResourceRequest {
     // This implementation of `from_str` can never fail, so use the impossible
@@ -49,17 +47,18 @@ impl FromStr for ResourceRequest {
             resource_type: s.to_string(),
             actions: None,
             locations: None,
-            data_types: None
+            data_types: None,
         })
     }
 }
-
 
 impl ToRedisArgs for &ResourceRequest {
     fn write_redis_args<W>(&self, out: &mut W)
     where
         W: ?Sized + RedisWrite,
     {
-        out.write_arg_fmt(serde_json::to_string(self).expect("Can't serialize ResourceRequest as string"))
+        out.write_arg_fmt(
+            serde_json::to_string(self).expect("Can't serialize ResourceRequest as string"),
+        )
     }
 }

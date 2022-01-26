@@ -20,7 +20,6 @@ pub async fn grant_options(service: web::Data<Service>) -> HttpResponse {
     }
 }
 
-
 /// Initiate a grant transaction
 pub async fn grant_request(
     service: web::Data<Service>,

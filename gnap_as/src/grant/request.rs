@@ -1,10 +1,12 @@
-use model::{GnapID, grant::*};
-use errors::GnapError;
 use dao::service::Service;
-use log::{trace, error};
+use errors::GnapError;
+use log::{error, trace};
+use model::{grant::*, GnapID};
 
-pub async fn process_request(service: &Service, request: GrantRequest) -> Result<GrantResponse, GnapError> {
-
+pub async fn process_request(
+    service: &Service,
+    request: GrantRequest,
+) -> Result<GrantResponse, GnapError> {
     // A valid request?
     if request.client.is_none() {
         // No client identifier
@@ -32,30 +34,29 @@ pub async fn process_request(service: &Service, request: GrantRequest) -> Result
     let rc = RequestContinuation::as_uri(&uri.clone());
     let mut interact_response = InteractResponse {
         tx_continue: rc,
-        redirect: None
+        redirect: None,
     };
 
     // What are the interaction methods?
-    for method in  request.interact.unwrap().start.iter() {
+    for method in request.interact.unwrap().start.iter() {
         match method {
             InteractStartMode::Redirect => {
                 trace!("GrantRequest interaction contains Redirect");
                 interact_response.redirect = Some(uri.clone());
-            },
-            InteractStartMode:: App => {
+            }
+            InteractStartMode::App => {
                 trace!("GrantRequest interaction contains App");
-            },
+            }
             InteractStartMode::UserCode => {
                 trace!("GrantRequest interaction contains UserCode");
             }
         }
     }
 
-    let response = GrantResponse{
+    let response = GrantResponse {
         instance_id: tx.tx_id.clone(),
-        interact: Some(interact_response)
+        interact: Some(interact_response),
     };
 
     Ok(response)
-
 }

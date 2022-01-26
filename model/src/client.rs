@@ -3,14 +3,13 @@
 //! Representation of client capabilities for both internal AS persistence and
 //! for client/service interaction.
 //!
+use super::CachePath;
 use crate::oauth::{AcrValueType, ApplicationType, GrantType, ResponseType, SubjectType};
-use redis::{RedisWrite, ToRedisArgs};
+use errors::GnapError;
 use jsonwebtoken::Algorithm;
+use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use errors::GnapError;
-use super::CachePath;
-
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct GnapClientRequest {
@@ -138,7 +137,8 @@ impl ToRedisArgs for &GnapClient {
     where
         W: ?Sized + RedisWrite,
     {
-        out.write_arg_fmt(serde_json::to_string(self).expect("Can't serialize GnapClient as string"))
+        out.write_arg_fmt(
+            serde_json::to_string(self).expect("Can't serialize GnapClient as string"),
+        )
     }
 }
-

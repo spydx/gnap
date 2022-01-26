@@ -1,10 +1,10 @@
-use model::grant::*;
 use dotenv::dotenv;
+use gnap_client::make_request;
+use log::trace;
+use model::gnap::GnapOptions;
+use model::grant::*;
 use pretty_env_logger;
 use std::error::Error as StdError;
-use gnap_client::make_request;
-use model::gnap::GnapOptions;
-use log::trace;
 
 const GNAP_AS_HOST: &str = "http://localhost:8000";
 
@@ -13,7 +13,6 @@ fn as_path(part: &str) -> String {
 }
 
 async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
-
     let path = as_path(".well-known/gnap-as-rs");
     trace!("Using path: {}", &path);
     let response: GnapOptions = reqwest::Client::new()
@@ -39,7 +38,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
 
     let request = make_request();
     println!("{:?}", &request);
-    trace!("Using {}", &options.service_endpoints.grant_request_endpoint);
+    trace!(
+        "Using {}",
+        &options.service_endpoints.grant_request_endpoint
+    );
     let response: GrantResponse = reqwest::Client::new()
         .post(options.service_endpoints.grant_request_endpoint)
         .json(&request)

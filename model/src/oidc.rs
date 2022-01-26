@@ -1,6 +1,6 @@
 //! This follows openid-connect-discovery-1_0
 //!
-use serde::{self, Serialize, Deserialize};
+use serde::{self, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct OpenIDConfiguration {
@@ -68,11 +68,17 @@ pub struct OpenIDConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub op_policy_uri: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub op_tos_uri: Option<String>
+    pub op_tos_uri: Option<String>,
 }
 
 impl OpenIDConfiguration {
-    pub fn new(issuer: String, authorization_endpoint: String, token_endpoint: String, userinfo_endpoint: String, jwks_uri: String) -> Self {
+    pub fn new(
+        issuer: String,
+        authorization_endpoint: String,
+        token_endpoint: String,
+        userinfo_endpoint: String,
+        jwks_uri: String,
+    ) -> Self {
         OpenIDConfiguration {
             issuer,
             authorization_endpoint,
@@ -108,7 +114,7 @@ impl OpenIDConfiguration {
             request_uri_parameter_supported: None,
             require_request_uri_registration: None,
             op_policy_uri: None,
-            op_tos_uri: None
-                }
+            op_tos_uri: None,
+        }
     }
 }

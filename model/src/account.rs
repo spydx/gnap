@@ -2,10 +2,10 @@
 //!
 //! Account and claims related to identities.
 //!
+use super::CachePath;
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use super::CachePath;
 
 /// Snail mail address and verification status
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -200,6 +200,6 @@ mod tests {
 
     #[test]
     fn cache_path() {
-        assert_eq!( Account::cache_path(), "gnap:accounts");
+        assert_eq!(Account::cache_path(), "gnap:accounts");
     }
 }

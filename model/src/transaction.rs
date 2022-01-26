@@ -2,11 +2,11 @@
 //!
 //!All interaction with the server starts with a grant request.
 //!
-use serde::{Serialize, Deserialize};
-use redis::{RedisWrite, ToRedisArgs};
-use super::CachePath;
-use uuid::Uuid;
 use super::grant::GrantRequest;
+use super::CachePath;
+use redis::{RedisWrite, ToRedisArgs};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 //#[allow(proc_macro_derive_resolution_fallback)]
 
@@ -103,15 +103,16 @@ impl CachePath for TransactionOptions {
     }
 }
 
- impl ToRedisArgs for &TransactionOptions {
+impl ToRedisArgs for &TransactionOptions {
     fn write_redis_args<W>(&self, out: &mut W)
     where
         W: ?Sized + RedisWrite,
     {
-        out.write_arg_fmt(serde_json::to_string(self).expect("Can't serialize TransactionOptions as string"))
+        out.write_arg_fmt(
+            serde_json::to_string(self).expect("Can't serialize TransactionOptions as string"),
+        )
     }
 }
-
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -120,7 +121,6 @@ pub enum GnapTransactionState {
     Received,
     ClientVerified,
     ResourceOwnerVerified,
-
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -136,10 +136,10 @@ impl GnapTransaction {
     }
 
     pub fn new(request: Option<GrantRequest>) -> Self {
-        Self{
+        Self {
             tx_id: Self::create_id(),
             state: GnapTransactionState::Received,
-            request: request
+            request: request,
         }
     }
 }
@@ -150,11 +150,13 @@ impl CachePath for GnapTransaction {
     }
 }
 
- impl ToRedisArgs for &GnapTransaction {
+impl ToRedisArgs for &GnapTransaction {
     fn write_redis_args<W>(&self, out: &mut W)
     where
         W: ?Sized + RedisWrite,
     {
-        out.write_arg_fmt(serde_json::to_string(self).expect("Can't serialize GnapTransaction as string"))
+        out.write_arg_fmt(
+            serde_json::to_string(self).expect("Can't serialize GnapTransaction as string"),
+        )
     }
 }

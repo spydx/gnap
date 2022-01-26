@@ -8,21 +8,21 @@ description = "A very simply GNAP Authorization Server written in Rust"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-files = "0.3"
-actix-utils = "2"
-actix-web = {version = "4.0.0-beta.10", features = ["openssl"]}
-openssl = { version = "0.10" }
+actix-files = "0.5.0"
+actix-utils = "3.0.0"
+actix-web = { version = "4.0.0-beta.21", features = ["openssl"] }
+openssl = "0.10.38"
 dotenv = "0.15.0"
-mongodb = "2.0.0"
-redis = { version = "0.21", features = ["tokio-comp", "connection-manager"]}
+mongodb = "2.1.0"
+redis = { version = "0.21.5", features = ["tokio-comp", "connection-manager"] }
 pretty_env_logger = "0.4.0"
-serde_json = "1.0.68"
-serde = { version = "1.0", features = ["derive"] }
-thiserror = "1.0.29"
+serde_json = "1.0.78"
+serde = { version = "1.0.136", features = ["derive"] }
+thiserror = "1.0.30"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
-futures = "0.3.17"
+futures = "0.3.19"
 log4rs = "1.0.0"
-log = "0.4"
+log = "0.4.14"
 jsonwebtoken = "7.2.0"
 errors = {path = "../errors"}
 model = {path = "../model"}

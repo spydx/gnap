@@ -1,5 +1,5 @@
-use thiserror::Error;
 use serde::Serialize;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum GnapError {
@@ -14,7 +14,7 @@ pub enum GnapError {
     #[error("Bad data error")]
     BadData,
     #[error("General error")]
-    GeneralError
+    GeneralError,
 }
 
 impl From<serde_json::Error> for GnapError {

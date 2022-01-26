@@ -1,18 +1,18 @@
 //! Some old OAuth .well-knowns models.
 //!
-use serde::{self, Serialize, Deserialize};
+use serde::{self, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum ResponseType {
-    Code
+    Code,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum ApplicationType {
     Web,
-    Native
+    Native,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -20,7 +20,7 @@ pub enum ApplicationType {
 pub enum GrantType {
     AuthorizationCode,
     Implicit,
-    RefreshToken
+    RefreshToken,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -35,4 +35,3 @@ pub enum SubjectType {
 pub enum AcrValueType {
     None,
 }
-

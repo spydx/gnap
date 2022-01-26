@@ -70,7 +70,7 @@ impl GnapDB {
                 Err(e) => {
                     trace!("{:?}", &e);
                     Err(GnapError::DatabaseError(e))
-                },
+                }
             },
             Err(e) => {
                 trace!("{:?}", &e);

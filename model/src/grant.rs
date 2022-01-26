@@ -3,12 +3,12 @@
 //! All the models for both requesting grants and for responding to
 //! a grant request.
 //!
-use serde::{Deserialize, Serialize};
-use serde_utils::vec_or_one::deser_one_as_vec;
-use uuid::Uuid;
 use super::GnapID;
 use errors::GnapError;
 use log::trace;
+use serde::{Deserialize, Serialize};
+use serde_utils::vec_or_one::deser_one_as_vec;
+use uuid::Uuid;
 
 /// AccessToken request flags.
 /// A set of flags that indicate desired
@@ -47,7 +47,7 @@ pub enum AccessTokenFlag {
     //  instance's token request (Section 2.1) objects.  This behavior
     //  MUST NOT be used unless the client instance has specifically
     //  requested it by use of the split flag.
-    Split
+    Split,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
@@ -89,7 +89,7 @@ impl AccessTokenRequest {
         AccessTokenRequest {
             label: None,
             access: Vec::<AccessRequest>::new(),
-            flags: None
+            flags: None,
         }
     }
 }
@@ -153,12 +153,11 @@ pub struct InteractRequest {
     pub finish: Option<InteractFinishRequest>,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged, rename_all = "lowercase")]
 pub enum GnapClientInstance {
     Value {},
-    Ref(String)
+    Ref(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -177,7 +176,6 @@ pub struct GrantRequest {
 // a client_id string, or by value, which will contain a set of info, including
 // key data.
 impl GnapID for GrantRequest {
-
     fn parse_id(&self) -> Result<Uuid, GnapError> {
         if let Some(client_instance) = &self.client {
             if let super::grant::GnapClientInstance::Ref(id) = client_instance {
@@ -185,24 +183,20 @@ impl GnapID for GrantRequest {
                 if let Ok(rid) = Uuid::parse_str(&id) {
                     return Ok(rid);
                 } else {
-                   return Err(GnapError::BadData);
+                    return Err(GnapError::BadData);
                 }
             } else {
                 trace!("Request client is a value");
                 return Err(GnapError::BadData);
             }
-        } else{
+        } else {
             return Err(GnapError::BadData);
         }
     }
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ContinuationAccessToken {
-
-}
-
+pub struct ContinuationAccessToken {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestContinuation {
@@ -228,18 +222,17 @@ pub struct RequestContinuation {
     //  client instance MUST present the continuation access token in all
     //  requests to the continuation URI as described in Section 7.2.
     #[serde(skip_serializing_if = "Option::is_none")]
-    access_token: Option<ContinuationAccessToken>
+    access_token: Option<ContinuationAccessToken>,
 }
 impl RequestContinuation {
     pub fn as_uri(uri: &str) -> Self {
         RequestContinuation {
             uri: uri.to_owned(),
             wait: None,
-            access_token: None
+            access_token: None,
         }
     }
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessToken {
@@ -296,15 +289,14 @@ pub struct InteractResponse {
     #[serde(rename = "continue")]
     pub tx_continue: RequestContinuation,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub redirect: Option<String>
-
+    pub redirect: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GrantResponse {
     pub instance_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub interact: Option<InteractResponse>
+    pub interact: Option<InteractResponse>,
 }
 
 impl GrantResponse {
@@ -315,7 +307,7 @@ impl GrantResponse {
     pub fn new() -> Self {
         Self {
             instance_id: Self::create_id(),
-            interact: None
+            interact: None,
         }
     }
 }
@@ -333,12 +325,12 @@ mod tests {
 
         let ic = InteractResponse {
             tx_continue: rc,
-            redirect: Some(uri)
+            redirect: Some(uri),
         };
 
-        let response = GrantResponse{
+        let response = GrantResponse {
             instance_id: tx_id,
-            interact: Some(ic)
+            interact: Some(ic),
         };
 
         println!("{}", serde_json::to_string(&response).expect("oops"));

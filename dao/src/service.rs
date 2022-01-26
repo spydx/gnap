@@ -36,7 +36,6 @@ pub struct Service {
 }
 
 impl Service {
-
     /// Establishes the client connections to the database and cache.
     ///
     /// This should be called only once in the crate main.
@@ -45,7 +44,10 @@ impl Service {
         // Service module.  But it works for now.
         let db_client = GnapDB::new().await;
         let cache_client = GnapCache::new().await;
-        Service{db_client, cache_client}
+        Service {
+            db_client,
+            cache_client,
+        }
     }
 
     /// Called by the OPTIONS method for /gnap/tx.  Returns info similar to .well-knowns
