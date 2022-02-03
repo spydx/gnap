@@ -60,6 +60,16 @@ To create a self-signed temporary cert for testing, copy&paste the following:
 
 */
 
+/*
+        openssl req -x509 \
+    -newkey rsa:4096 \
+    -keyout .keystore/key.pem \
+    -out .keystore/cert.pem \
+    -sha256 \
+    -days 3650 \
+    -subj '/CN=localhost'
+*/
+
 /// SSL builder for HttpServer
 pub fn tls_builder() -> SslAcceptorBuilder {
     // load ssl keys
