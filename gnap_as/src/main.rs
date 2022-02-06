@@ -41,6 +41,7 @@ async fn main() -> std::io::Result<()> {
             .configure(routes::well_known::routes)
             .configure(routes::transaction::routes)
             .configure(routes::rs::routes)
+            .configure(routes::tokens::routes)
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
     };
