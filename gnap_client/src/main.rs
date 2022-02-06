@@ -21,7 +21,7 @@ async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
         .await?
         .json()
         .await?;
-    println!("{:?}", &response);
+    println!("{:#?}", &response);
     Ok(response)
 }
 
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let options = get_config().await?;
 
     let request = make_request();
-    println!("{:?}", &request);
+    println!("{:#?}", &request);
     trace!(
         "Using {}",
         &options.service_endpoints.grant_request_endpoint
@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     // server http response
-    println!("Response: {:?}", response);
+    println!("Response: {:#?}", response);
 
     Ok(())
 }
