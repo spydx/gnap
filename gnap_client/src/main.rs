@@ -14,14 +14,14 @@ fn as_path(part: &str) -> String {
 
 async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
     let path = as_path(".well-known/gnap-as-rs");
-    trace!("Using path: {}", &path);
+    println!("Using path: {}", &path);
     let response: GnapOptions = reqwest::Client::new()
         .get(&path)
         .send()
         .await?
         .json()
         .await?;
-    println!("{:#?}", &response);
+    println!("Options: {:#?}", &response);
     Ok(response)
 }
 
@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let options = get_config().await?;
 
     let request = make_request();
-    println!("{:#?}", &request);
+    println!("Request: {:#?}", &request);
     trace!(
         "Using {}",
         &options.service_endpoints.grant_request_endpoint
