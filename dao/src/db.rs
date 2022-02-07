@@ -81,7 +81,7 @@ impl GnapDB {
 
     pub async fn update_gnap_options(&self) -> Result<GnapOptions, GnapError> {
         let collection = self.database.collection::<GnapOptions>("service_config");
-        let options = GnapOptions::new("http://localhost:800");
+        let options = GnapOptions::new("http://localhost:8000");
         match collection.insert_one(options.clone(), None).await {
             Ok(_) => {
                 debug!("Added options: {:?}", &options);
