@@ -5,7 +5,6 @@ use dao::service::Service;
 // use log::{error, trace};
 use model::client::GnapClientRequest;
 
-
 /// HTTP POST  <as>/gnap/introspect
 pub async fn introspect(
     _service: web::Data<Service>,
