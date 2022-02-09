@@ -101,7 +101,6 @@ The service will run on 0.0.0.0:8000.  You can change this by updating the [.env
 
 There is a Postman collection in the root folder.  Import that.
 
-
 ## Extending the Service
 
 ### Step 1: Update the Model
