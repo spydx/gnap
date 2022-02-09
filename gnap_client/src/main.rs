@@ -36,12 +36,14 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     // Get the GNAP well knowns from the server
     let options = get_config().await?;
 
+    // 2. 
     let request = make_request();
     println!("Request: {:#?}", &request);
     trace!(
         "Using {}",
         &options.service_endpoints.grant_request_endpoint
     );
+    // 3.
     let response: GrantResponse = reqwest::Client::new()
         .post(options.service_endpoints.grant_request_endpoint)
         .json(&request)
@@ -55,3 +57,59 @@ async fn main() -> Result<(), Box<dyn StdError>> {
 
     Ok(())
 }
+
+/*
+
+1.  The client instance establishes a verifiable session to the user, in the role of the end-user.
+
+2.  The client instance requests access to the resource (Section 2). 
+    The client instance indicates that it can redirect to an arbitrary URL (Section 2.5.1.1) 
+    and receive a redirect from the browser (Section 2.5.2.1). 
+    The client instance stores verification information for its redirect in the session created in (1).
+
+3.  The AS determines that interaction is needed and responds (Section 3)
+    with a URL to send the user to (Section 3.3.1) and information needed to verify the redirect 
+    (Section 3.3.4) in (7). 
+    The AS also includes information the client instance will need to continue 
+    the request (Section 3.1) in (8). 
+    The AS associates this continuation information with 
+    an ongoing request that will be referenced in (4), (6), and (8).
+
+4.  The client instance stores the verification and continuation information from (3) 
+    in the session from (1). The client instance then redirects the user to the URL (Section 4.1.1) 
+    given by the AS in (3).
+    The user's browser loads the interaction redirect URL. 
+    The AS loads the pending request based on the incoming URL generated in (3).
+
+5.  The user authenticates at the AS, taking on the role of the RO.
+
+6.  As the RO, the user authorizes the pending request from the client instance.
+
+7.  When the AS is done interacting with the user, 
+    the AS redirects the user back (Section 4.2.1) to the client instance 
+    using the redirect URL provided in (2). 
+    The redirect URL is augmented with an interaction reference that 
+    the AS associates with the ongoing request created in (2) and referenced in (4). 
+    The redirect URL is also augmented with a hash of the security information 
+    provided in (2) and (3). 
+    The client instance loads the verification information from (2) and (3) 
+    from the session created in (1). 
+    The client instance calculates a hash (Section 4.2.3) 
+    based on this information and continues only if the hash validates. 
+    Note that the client instance needs to ensure that the parameters for the incoming request 
+    match those that it is expecting from the session created in (1). 
+    The client instance also needs to be prepared for the end-user never being returned 
+    to the client instance and handle timeouts appropriately.
+
+8.  The client instance loads the continuation information from (3) 
+    and sends the interaction reference from (7) in a request to continue the request (Section 5.1). 
+    The AS validates the interaction reference ensuring that 
+    the reference is associated with the request being continued.
+
+9.  If the request has been authorized, the AS grants access to the information in 
+    the form of access tokens (Section 3.2) and direct subject information (Section 3.4) 
+    to the client instance.
+
+10. The client instance uses the access token (Section 7.2) to call the RS.
+11. The RS validates the access token and returns an appropriate response for the API.
+*/

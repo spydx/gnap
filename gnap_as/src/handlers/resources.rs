@@ -10,7 +10,7 @@ pub async fn introspect(
     _service: web::Data<Service>,
     _client: web::Json<GnapClientRequest>,
 ) -> HttpResponse {
-    HttpResponse::Ok().json("{OK intro validate}")
+    HttpResponse::Ok().json("{OK introspect}")
 }
 
 /// HTTP POST  <as>/gnap/resource

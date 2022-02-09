@@ -89,13 +89,59 @@ const accounts = [
         website: 'http://example.com',
         zoneinfo: 'Europe/Berlin',
     },
+    {
+        account_id: 'e63769de-3a44-11ec-8d3d-0242ac130001',
+        address: [
+            {
+                country: '000',
+                formatted: '000',
+                locality: '000',
+                postal_code: '000',
+                region: '000',
+                street_address: '000',
+            }
+        ],
+        birthdate: '1983-01-29',
+        email: [
+            {
+                address: 'ken@kefo.no',
+                verified: false,
+                primary: true,
+            },
+        ],
+        family_name: 'Fossen',
+        gender: 'male',
+        given_name: 'Kenneth',
+        locale: 'en-US',
+        middle_name: '',
+        name: 'Kenneth Fossen',
+        nickname: 'spydx',
+        phone: [
+            {
+                phone_number: '+47 0000 0000',
+                verified: false,
+                primary: true,
+            },
+        ],
+        picture: 'http://lorempixel.com/400/200/people',
+        preferred_username: 'spydx',
+        profile: 'https://profile.kefo.no',
+        website: 'https://kefo.no',
+        zoneinfo: 'Europe/Berlin',
+    },
 ]
 
-conn = new Mongo();
+const resources = [
+
+]
+
+const tokens = [
+
+]
+let conn = new Mongo();
 db = conn.getDB("gnap");
 db.service_config.insert(config);
 db.clients.insertMany(clients);
 db.accounts.insertMany(accounts);
-
-
-
+db.tokens.insertMany(tokens);
+db.resources.insertMany(resources);
