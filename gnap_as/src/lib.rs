@@ -1,9 +1,10 @@
 use actix_web::web;
+use dao::authservice::AuthService;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslFiletype, SslMethod};
 use std::env;
 use std::net::SocketAddr;
-
 use dao::service::Service;
+
 
 mod utils;
 
@@ -18,6 +19,13 @@ pub async fn app_state() -> web::Data<Service> {
     let app_state = web::Data::new(dao_service);
 
     app_state
+}
+
+pub async fn auth_state() -> web::Data<AuthService> {
+    let authservice = AuthService::create().await;
+    let auth_state = web::Data::new(authservice);
+
+    auth_state
 }
 
 /// Get addresses from ENV

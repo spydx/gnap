@@ -1,31 +1,20 @@
 use uuid::Uuid;
-use crate::credentials::Credentials;
 use super::CachePath;
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
-use secrecy::Secret;
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct User {
     pub id: Uuid,
     pub username: String,
-    pub password: Secret<String>,
+    pub password: String,
 }
 
 
 impl User {
-    fn create_id() -> Uuid {
+    pub fn create_id() -> Uuid {
         Uuid::new_v4()
     }
-
-    fn create_user(user: Credentials) -> Self {
-        todo!()
-    }
-
-    fn validate_user(user: Credentials) -> bool {        
-        false
-    }
-
 }
 
 impl CachePath for User {

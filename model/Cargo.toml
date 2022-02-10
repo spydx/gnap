@@ -15,4 +15,3 @@ serde_utils = {path = "../serde_utils"}
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 void = "1.0.2"
 errors = {path = "../errors"}
-secrecy = "0.8.0"

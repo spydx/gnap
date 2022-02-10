@@ -1,14 +1,10 @@
-use argon2::{Argon2, PasswordHasher};
+
+use log::trace;
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use std::env;
-use uuid::Uuid;
-
-use argon2::{Algorithm, Version};
 use errors::AuthError;
-use log::{debug, trace};
-use model::credentials::Credentials;
-use rand;
-use secrecy::Secret;
+use model::users::User;
+
 pub struct AuthDb {
     pub client: Client,
     pub database: Database,
@@ -34,30 +30,41 @@ impl AuthDb {
         }
     }
 
-    pub async fn validate_account(
+    pub async fn fetch_account(
         &self,
-        credentials: Credentials,
-    ) -> Result<Option<bool>, AuthError> {
-        todo!()
+        username: String,
+    ) -> Result<Option<User>, AuthError> {
+        let cursor_result = self.database.collection::<User>("users")
+        .find_one(doc! { "username": &username}, None)
+        .await
+        .map_err(AuthError::DatabaseError);
+
+        match cursor_result {
+            Ok(cursor) => match cursor {
+                Some(res) => {
+                    Ok(Some(res))
+                },
+                None => {
+                    trace!("Fetch user error");
+                    Err(AuthError::DatabaseNotFound)
+                }
+            },
+            Err(e) => {
+                trace!("Fetch user error {:?}",e);
+                Err(e)
+            }
+        }
     }
 
-    pub async fn create_account(
+    pub async fn add_user(
         &self,
-        credentials: Credentials,
-    ) -> Result<Option<bool>, AuthError> {
-        let collection = self.database.collection::<Users>("users");
-        todo!()
-    }
-}
+        user: User,
+    ) -> Result<bool, AuthError> {
+        let collection = self.database.collection::<User>("users");
 
-fn compute_hash(password: Secret<String>) -> Result<Secret<String>, AuthError> {
-    let salt = SaltString::generate(&mut rand::thread_rng());
-    let hash = Argon2::new(
-        Algorithm::Argon2id,
-        Version::V0x13,
-        Params::new(1500, 2, None).unwrap(),
-        )
-        .hash_password(password.expose_secret().as_bytes(), &salt)
-        .to_string();
-    Ok(Secret::new(hash))
+        match collection.insert_one(user, None).await {
+            Ok(_) => Ok(true),
+            Err(err) => Err(AuthError::DatabaseError(err))
+        }
+    }
 }

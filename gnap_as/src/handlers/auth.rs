@@ -2,12 +2,12 @@
 
 use actix_web::{web, HttpResponse,};
 use actix_web::http::header::HeaderMap;
-use dao::service::Service;
 use log::trace;
 use model::credentials::Credentials;
 use errors::AuthError;
+use dao::authservice::AuthService;
 
-pub async fn auth(_service: web::Data<Service>, request: web::HttpRequest) -> HttpResponse {
+pub async fn auth(_service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
     trace!("Auth");
     let _login = basic_authentication(request.headers());
     

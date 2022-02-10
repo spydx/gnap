@@ -14,6 +14,7 @@ pub mod auth;
 pub mod cache;
 pub mod db;
 pub mod service;
+pub mod authservice;
 
 #[cfg(test)]
 mod tests {

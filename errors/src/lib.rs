@@ -17,11 +17,22 @@ pub enum GnapError {
     GeneralError,
 }
 
+#[derive(Error, Debug)]
 pub enum AuthError {
+    #[error("Authorization field missing")]
     BasicFailed,
+    #[error("Field error for username")]
     UserNameError,
+    #[error("Datbase not Found")]
+    DatabaseNotFound,
+    #[error("Field error for password")]
     PasswordError,
+    #[error("Hash error")]
     HashError,
+    #[error("Can't compare two hashes")]
+    HashMissmatch,
+    #[error("Can't store a user in the database")]
+    DatabaseError(#[from] mongodb::error::Error),
 }
 
 impl From<serde_json::Error> for GnapError {
