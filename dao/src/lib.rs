@@ -10,6 +10,7 @@
 //! the [GnapCache](cache::GnapCache).
 //!
 
+pub mod auth;
 pub mod cache;
 pub mod db;
 pub mod service;

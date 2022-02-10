@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod db;
 pub mod resources;
 pub mod tokens;

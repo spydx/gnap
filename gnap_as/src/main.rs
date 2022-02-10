@@ -4,6 +4,7 @@ use dotenv::dotenv;
 use log::info;
 use pretty_env_logger;
 
+#[allow(unused_imports)]
 use gnap_as::{app_state, get_ip_addresses, tls_builder};
 mod grant;
 mod handlers;
@@ -48,7 +49,7 @@ async fn main() -> std::io::Result<()> {
     // Start http server with the app
     HttpServer::new(app)
         .bind(api_address)?
-        .bind_openssl(tls_address, tls_builder())?
+        //.bind_openssl(tls_address, tls_builder())?
         .run()
         .await
 }

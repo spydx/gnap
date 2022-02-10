@@ -16,6 +16,9 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::resource("/resource").route(web::post().to(handlers::resources::resource)),
+            )
+            .service(
+                web::resource("/auth").route(web::get().to(handlers::auth::auth))
             ),
     );
 }

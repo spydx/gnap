@@ -17,6 +17,13 @@ pub enum GnapError {
     GeneralError,
 }
 
+pub enum AuthError {
+    BasicFailed,
+    UserNameError,
+    PasswordError,
+    HashError,
+}
+
 impl From<serde_json::Error> for GnapError {
     fn from(_source: serde_json::Error) -> Self {
         Self::GeneralError
