@@ -20,6 +20,13 @@ pub async fn auth(_service: web::Data<AuthService>, request: web::HttpRequest) -
     }
 }
 
+pub async fn create(_service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
+    trace!("User create");
+    let _account = basic_authentication(request.headers());
+
+    HttpResponse::Ok().json("ok")
+}
+
 
 fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, AuthError> {
     let header_values = headers
