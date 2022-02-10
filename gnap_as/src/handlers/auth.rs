@@ -7,6 +7,8 @@ use model::credentials::Credentials;
 use errors::AuthError;
 use dao::authservice::AuthService;
 
+// TODO: 
+// GET <as>/gnap/auth
 pub async fn auth(_service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
     trace!("Auth");
     let _login = basic_authentication(request.headers());
@@ -20,6 +22,8 @@ pub async fn auth(_service: web::Data<AuthService>, request: web::HttpRequest) -
     }
 }
 
+// TODO: 
+// POST <as>/gnap/auth 
 pub async fn create(_service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
     trace!("User create");
     let _account = basic_authentication(request.headers());
