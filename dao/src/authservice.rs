@@ -46,9 +46,9 @@ impl AuthService {
         credentials: Credentials,
     ) -> Result<Option<bool>, AuthError> {
         let password_hash = compute_hash(credentials.password).expect("Failed to hash password");
-
+        let id = User::create_id().to_string();
         let user = User {
-            id: User::create_id(),
+            id: id,
             username: credentials.username,
             password: password_hash
         };

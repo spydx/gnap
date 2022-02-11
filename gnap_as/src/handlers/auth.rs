@@ -9,26 +9,50 @@ use dao::authservice::AuthService;
 
 // TODO: 
 // GET <as>/gnap/auth
-pub async fn auth(_service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
+pub async fn auth(service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
     trace!("Auth");
-    let _login = basic_authentication(request.headers());
+    let login = basic_authentication(request.headers());
     
-    match _login {
-        Ok(v) => {
-            println!("{:#?}", v);
-            HttpResponse::Ok().json("ok")
+    match login {
+        Ok(credentials) => {
+            println!("{:#?}", credentials.username);
+            match service.validate_account(credentials).await {
+                Ok(b) => {
+                    if b {
+                        HttpResponse::Ok().json(b)
+                    } else {
+                        HttpResponse::Ok().json(b)
+                    }
+                }, 
+                Err(_) => HttpResponse::Unauthorized().body("unauthorized")
+            }
         },
-        Err(_) => HttpResponse::BadRequest().body("ups"),
+        Err(_) => HttpResponse::BadRequest().body("Invalid data"),
     }
 }
 
 // TODO: 
 // POST <as>/gnap/auth 
-pub async fn create(_service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
+pub async fn create(service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
     trace!("User create");
-    let _account = basic_authentication(request.headers());
-
-    HttpResponse::Ok().json("ok")
+    let account = basic_authentication(request.headers());
+    match account {
+        Ok(user) => {
+            match service.create_account(user).await {
+                Ok(b) => {if b.unwrap() {
+                        trace!("Created status {:?}", b);
+                        HttpResponse::Ok().json("ok")
+                    } else {
+                        trace!("Created status {:?}", b);
+                        HttpResponse::InternalServerError().body("failed to create user")
+                    }
+                },
+                Err(_) => HttpResponse::InternalServerError().body("failed to create user")
+            }
+        
+        },
+        Err(_) => HttpResponse::BadRequest().body("Invalid data")
+    }
 }
 
 
