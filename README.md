@@ -1,5 +1,7 @@
 # GNAP Authorization Service in Rust
 
+Creator: [dskyberg](https://github.com/dskyberg) - [Original Repo](https://github.com/dskyberg/gnap)
+
 This is a learning sanbox to explore building full stack services in Rust, while
 maybe actually doing someting useful.
 
