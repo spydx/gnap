@@ -11,7 +11,7 @@ pub mod resource;
 pub mod transaction;
 pub mod credentials;
 pub mod users;
-
+pub mod tokens;
 /// CachePath ensures each model type that will be cached provides a
 /// consistent path to cache objects
 pub trait CachePath {

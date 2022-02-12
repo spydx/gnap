@@ -35,6 +35,17 @@ pub enum AuthError {
     DatabaseError(#[from] mongodb::error::Error),
 }
 
+#[derive(Error, Debug)]
+pub enum TokenError {
+    #[error("General error")]
+    InvalidToken,
+    #[error("Can't store a token in the database")]
+    DatabaseError(#[from] mongodb::error::Error),
+    #[error("Can't find token in the database")]
+    NotFound,
+}
+
+
 impl From<serde_json::Error> for GnapError {
     fn from(_source: serde_json::Error) -> Self {
         Self::GeneralError

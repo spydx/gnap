@@ -1,10 +1,9 @@
 use actix_web::web;
 use dao::authservice::AuthService;
+use dao::service::Service;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslFiletype, SslMethod};
 use std::env;
 use std::net::SocketAddr;
-use dao::service::Service;
-
 
 mod utils;
 

@@ -19,10 +19,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::resource("/auth")
-                    .route(
-                        web::get().to(handlers::auth::auth))
-                    .route(
-                        web::post().to(handlers::auth::create))
+                    .route(web::get().to(handlers::auth::auth))
+                    .route(web::post().to(handlers::auth::create)),
             ),
     );
 }
