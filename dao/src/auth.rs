@@ -1,9 +1,8 @@
-
+use errors::AuthError;
 use log::trace;
+use model::users::User;
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use std::env;
-use errors::AuthError;
-use model::users::User;
 
 pub struct AuthDb {
     pub client: Client,
@@ -30,41 +29,35 @@ impl AuthDb {
         }
     }
 
-    pub async fn fetch_account(
-        &self,
-        username: String,
-    ) -> Result<Option<User>, AuthError> {
-        let cursor_result = self.database.collection::<User>("users")
-        .find_one(doc! { "username": &username}, None)
-        .await
-        .map_err(AuthError::DatabaseError);
+    pub async fn fetch_account(&self, username: String) -> Result<Option<User>, AuthError> {
+        let cursor_result = self
+            .database
+            .collection::<User>("users")
+            .find_one(doc! { "username": &username}, None)
+            .await
+            .map_err(AuthError::DatabaseError);
 
         match cursor_result {
             Ok(cursor) => match cursor {
-                Some(res) => {
-                    Ok(Some(res))
-                },
+                Some(res) => Ok(Some(res)),
                 None => {
                     trace!("Fetch user error");
                     Err(AuthError::DatabaseNotFound)
                 }
             },
             Err(e) => {
-                trace!("Fetch user error {:?}",e);
+                trace!("Fetch user error {:?}", e);
                 Err(e)
             }
         }
     }
 
-    pub async fn add_user(
-        &self,
-        user: User,
-    ) -> Result<bool, AuthError> {
+    pub async fn add_user(&self, user: User) -> Result<bool, AuthError> {
         let collection = self.database.collection::<User>("users");
 
         match collection.insert_one(user, None).await {
             Ok(_) => Ok(true),
-            Err(err) => Err(AuthError::DatabaseError(err))
+            Err(err) => Err(AuthError::DatabaseError(err)),
         }
     }
 }

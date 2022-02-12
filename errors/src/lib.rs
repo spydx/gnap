@@ -45,7 +45,6 @@ pub enum TokenError {
     NotFound,
 }
 
-
 impl From<serde_json::Error> for GnapError {
     fn from(_source: serde_json::Error) -> Self {
         Self::GeneralError

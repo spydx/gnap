@@ -2,16 +2,16 @@ use errors::GnapError;
 use uuid::Uuid;
 pub mod account;
 pub mod client;
+pub mod credentials;
 pub mod gnap;
 pub mod grant;
 pub mod introspect;
 pub mod oauth;
 pub mod oidc;
 pub mod resource;
-pub mod transaction;
-pub mod credentials;
-pub mod users;
 pub mod tokens;
+pub mod transaction;
+pub mod users;
 /// CachePath ensures each model type that will be cached provides a
 /// consistent path to cache objects
 pub trait CachePath {

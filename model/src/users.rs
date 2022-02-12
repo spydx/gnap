@@ -1,7 +1,7 @@
-use uuid::Uuid;
 use super::CachePath;
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct User {
@@ -9,7 +9,6 @@ pub struct User {
     pub username: String,
     pub password: String,
 }
-
 
 impl User {
     pub fn create_id() -> Uuid {
