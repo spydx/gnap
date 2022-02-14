@@ -3,7 +3,7 @@
 use errors::GnapError;
 use futures::stream::TryStreamExt;
 use log::{debug, trace};
-use model::transaction::TransactionOptions;
+use model::transaction::{TransactionOptions, GnapTransaction};
 use model::{
     account::{Account, AccountRequest},
     client::{GnapClient, GnapClientRequest},
@@ -18,6 +18,13 @@ pub struct GnapDB {
     pub client: Client,
     pub database: Database,
 }
+
+const COL_TRANSACTION: &str = "transaction";
+const COL_TRANSACTIONOPTIONS: &str = "transaction_options";
+const COL_GNAPOPTIONS: &str = "service_config";
+const COL_ACCOUNTS: &str = "accounts";
+const COL_CLIENTS: &str = "clients";
+
 
 //const MONGO_URI: &str = "mongodb://127.0.0.1:27017";
 
@@ -56,7 +63,7 @@ impl GnapDB {
         //self.update_gnap_options().await?;
         let cursor_result = self
             .database
-            .collection::<GnapOptions>("service_config")
+            .collection::<GnapOptions>(COL_GNAPOPTIONS)
             .find(None, None)
             .await
             .map_err(GnapError::DatabaseError);
@@ -80,7 +87,7 @@ impl GnapDB {
     }
 
     pub async fn update_gnap_options(&self) -> Result<GnapOptions, GnapError> {
-        let collection = self.database.collection::<GnapOptions>("service_config");
+        let collection = self.database.collection::<GnapOptions>(COL_GNAPOPTIONS);
         let options = GnapOptions::new("http://localhost:8000");
         match collection.insert_one(options.clone(), None).await {
             Ok(_) => {
@@ -98,7 +105,7 @@ impl GnapDB {
     pub async fn fetch_grant_options(&self) -> Result<TransactionOptions, GnapError> {
         let mut cursor = self
             .database
-            .collection::<TransactionOptions>("transaction_options")
+            .collection::<TransactionOptions>(COL_TRANSACTIONOPTIONS)
             .find(None, None)
             .await
             .map_err(GnapError::DatabaseError)?;
@@ -115,7 +122,7 @@ impl GnapDB {
         trace!("Fetching client by ID: {}", id.to_string());
         let cursor_result = self
             .database
-            .collection::<GnapClient>("clients")
+            .collection::<GnapClient>(COL_CLIENTS)
             .find_one(doc! {"client_id": &id.to_string()}, None)
             .await
             .map_err(GnapError::DatabaseError);
@@ -138,7 +145,7 @@ impl GnapDB {
     }
 
     pub async fn add_client(&self, request: GnapClientRequest) -> Result<GnapClient, GnapError> {
-        let collection = self.database.collection::<GnapClient>("clients");
+        let collection = self.database.collection::<GnapClient>(COL_CLIENTS);
         let client = GnapClient::new(request.redirect_uris, request.client_name);
         match collection.insert_one(client.clone(), None).await {
             Ok(_) => {
@@ -157,7 +164,7 @@ impl GnapDB {
         trace!("Fetching account by ID: {}", id.to_string());
         let cursor_result = self
             .database
-            .collection::<Account>("accounts")
+            .collection::<Account>(COL_ACCOUNTS)
             .find_one(doc! {"account_id": &id.to_string()}, None)
             .await
             .map_err(GnapError::DatabaseError);
@@ -180,7 +187,7 @@ impl GnapDB {
     }
 
     pub async fn add_account(&self, request: AccountRequest) -> Result<Account, GnapError> {
-        let collection = self.database.collection::<Account>("accounts");
+        let collection = self.database.collection::<Account>(COL_ACCOUNTS);
         let account = Account::from(request);
         match collection.insert_one(&account, None).await {
             Ok(_) => {
@@ -192,6 +199,11 @@ impl GnapDB {
                 Err(GnapError::DatabaseError(err))
             }
         }
+    }
+
+    pub async fn add_transaction(&self, tx: GnapTransaction) -> Result<GnapTransaction, GnapError> {
+        let collection = self.database.collection(COL_TRANSACTION);
+        Ok(tx)
     }
 }
 
