@@ -41,13 +41,14 @@ fn generate_token() -> String {
     let characters: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let mut rng = rand::thread_rng();
 
-    let mut res = String::from("");
+    let mut token = String::from("");
     let charlength = characters.len();
     for _n in 0..length {
         let pos = rng.gen_range(0..charlength);
-        res.push(characters.chars().nth(pos).unwrap());
+        token.push(characters.chars().nth(pos).unwrap());
     }
-    res
+    
+    token
 }
 
 #[allow(dead_code)]
@@ -56,28 +57,16 @@ fn generate_usercode() -> String {
     let characters: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let mut rng = rand::thread_rng();
 
-    let mut res = String::from("");
+    let mut usercode = String::from("");
     let charlength = characters.len();
 
     for _ in 0..length {
         let pos = rng.gen_range(0..charlength);
-        res.push(characters.chars().nth(pos).unwrap());
+        usercode.push(characters.chars().nth(pos).unwrap());
     }
 
-    res
+    usercode
 }
-/*
-public generateRandomString(length: Number): String {
-    var result = '';
-    var characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
-  */
 
 #[cfg(test)]
 mod test {
