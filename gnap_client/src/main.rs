@@ -6,6 +6,7 @@ use model::grant::*;
 use pretty_env_logger;
 use std::error::Error as StdError;
 use gnap_client::gnap_session::GnapSession;
+use std::io;
 
 const GNAP_AS_HOST: &str = "http://localhost:8000";
 
@@ -67,7 +68,14 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     gnap_session.instance_id = Some(step3.instance_id);
     gnap_session.tx_contiune = Some(step3.interact.unwrap().tx_continue.uri);
     
-    let secret = base64::encode(format!("{}:{}", "kenneth", "password"));
+    let mut username = String::new();
+    let mut password = String::new();
+
+    println!("Username: ");
+    io::stdin().read_line(&mut username)?;
+    println!("Password: ");
+    io::stdin().read_line(&mut password)?;
+    let secret = base64::encode(format!("{}:{}", username, password));
  
     let step4 = reqwest::Client::new()
         .get(format!("http://{}",&gnap_session.redirect.unwrap()))

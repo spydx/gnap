@@ -1,5 +1,5 @@
 //! Transaction API Handlers
-use crate::grant::request::process_request;
+use crate::grant::request::{process_request, process_continue_request};
 use actix_web::{web, HttpResponse};
 use dao::service::Service;
 use log::{error, trace};
@@ -21,12 +21,33 @@ pub async fn grant_options(service: web::Data<Service>) -> HttpResponse {
 }
 
 /// Initiate a grant transaction
+/// HTTP POST <as>/gnap/tx
 pub async fn grant_request(
     service: web::Data<Service>,
     request: web::Json<GrantRequest>,
 ) -> HttpResponse {
     // Create a response from the request
     let result = process_request(&service, request.into_inner()).await;
+    match result {
+        Ok(data) => {
+            trace!("processed grant request: {:?}", data);
+            HttpResponse::Ok().json(data)
+        }
+        Err(err) => {
+            error!("{:?}", err);
+            HttpResponse::InternalServerError().body(err.to_string())
+        }
+    }
+}
+
+/// Continue a grant transaction
+/// HTTP POST <as>/gnap/tx/:id
+pub async fn continue_request(
+    service: web::Data<Service>,
+    request: web::Json<GrantRequest>,
+    path: web::Path<String>
+) -> HttpResponse {
+    let result = process_continue_request(&service, request.into_inner(), &path).await;
     match result {
         Ok(data) => {
             trace!("processed grant request: {:?}", data);

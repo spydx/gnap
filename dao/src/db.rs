@@ -202,7 +202,7 @@ impl GnapDB {
     }
 
     pub async fn add_transaction(&self, tx: GnapTransaction) -> Result<GnapTransaction, GnapError> {
-        let collection = self.database.collection(COL_TRANSACTION);
+        let collection = self.database.collection::<GnapTransaction>(COL_TRANSACTION);
         Ok(tx)
     }
 }

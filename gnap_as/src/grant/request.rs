@@ -60,3 +60,12 @@ pub async fn process_request(
 
     Ok(response)
 }
+
+
+pub async fn process_continue_request(
+    _service: &Service,
+    _request: GrantRequest,
+    _tx_id: &String
+) -> Result<GrantResponse, GnapError>{
+    Err(GnapError::BadData)
+}

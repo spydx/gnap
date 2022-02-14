@@ -208,8 +208,9 @@ impl Service {
         &self,
         request: GrantRequest,
     ) -> Result<GnapTransaction, GnapError> {
-        let mut con = self.cache_client.client.get_async_connection().await?;
+        //  let mut con = self.cache_client.client.get_async_connection().await?;
         let tx = GnapTransaction::new(Some(request));
+        /* REDIS Is out
         let cache_key = format!("{}:{}", GnapTransaction::cache_path(), &tx.tx_id.clone());
         let _: () = redis::pipe()
             .atomic()
@@ -217,6 +218,9 @@ impl Service {
             .expire(&cache_key, 3600)
             .query_async(&mut con)
             .await?;
+        */
+        let tx = self.db_client.add_transaction(tx.clone()).await?;
+
         Ok(tx)
     }
 }
