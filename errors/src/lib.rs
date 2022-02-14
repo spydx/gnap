@@ -43,6 +43,8 @@ pub enum TokenError {
     DatabaseError(#[from] mongodb::error::Error),
     #[error("Can't find token in the database")]
     NotFound,
+    #[error("Can't rotate token")]
+    RotateToken
 }
 
 impl From<serde_json::Error> for GnapError {

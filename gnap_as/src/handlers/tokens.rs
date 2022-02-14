@@ -4,6 +4,7 @@ use actix_web::{web, HttpResponse};
 use dao::tokenservice::TokenService;
 use log::trace;
 use mongodb::bson::doc;
+use model::tokens::Token;
 
 pub async fn revoke_token(
     service: web::Data<TokenService>,
@@ -11,7 +12,8 @@ pub async fn revoke_token(
 ) -> HttpResponse {
     trace!("revoke token");
     let token_id = token.into_inner();
-    match service.revoke_token(token_id).await {
+    let token = Token::from_string(token_id);
+    match service.revoke_token(&token).await {
         Ok(_) => {
             trace!("Succesfully revoked");
             HttpResponse::Ok().json("")

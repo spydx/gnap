@@ -31,7 +31,7 @@ impl TokenDb {
         }
     }
 
-    pub async fn add_token(&self, token: Token) -> Result<bool, TokenError> {
+    pub async fn add_token(&self, token: &Token) -> Result<bool, TokenError> {
         let collection = self.database.collection::<Token>(COLLECTION);
         match collection.insert_one(token, None).await {
             Ok(_) => Ok(true),
@@ -39,11 +39,11 @@ impl TokenDb {
         }
     }
 
-    pub async fn remove_token(&self, access_token: String) -> Result<bool, TokenError> {
+    pub async fn remove_token(&self, token: &Token) -> Result<bool, TokenError> {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .delete_one(doc! { "access_token": access_token}, None)
+            .delete_one(doc! { "access_token": &token.access_token}, None)
             .await
             .map_err(TokenError::DatabaseError);
 
@@ -67,6 +67,32 @@ impl TokenDb {
         match cursor_result {
             Ok(_) => true,
             Err(_) => false,
+        }
+    }
+
+    pub async fn fetch_token(&self, token: &Token) -> Result<Token, TokenError> {
+        let cursor_result = self
+            .database
+            .collection::<Token>(COLLECTION)
+            .find_one( doc! { "access_token": &token.access_token }, None)
+            .await
+            .map_err(TokenError::DatabaseError);
+
+        let res_token = match cursor_result {
+            Ok(stored_token) => {
+                if stored_token.is_some() {
+                    stored_token
+                } else {
+                    None
+                }
+            },
+            Err(_) => None
+        };
+
+        if res_token.is_none() {
+            Err(TokenError::NotFound)
+        } else {
+            Ok(res_token.unwrap())
         }
     }
 }

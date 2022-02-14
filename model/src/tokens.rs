@@ -15,6 +15,11 @@ impl Token {
             access_token: access_token,
         }
     }
+    pub fn from_string(s: String) -> Self {
+        Self {
+            access_token: s
+        }
+    }
 }
 
 impl CachePath for Token {
