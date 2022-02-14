@@ -67,7 +67,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     gnap_session.instance_id = Some(step3.instance_id);
     gnap_session.tx_contiune = Some(step3.interact.unwrap().tx_continue.uri);
     
-    let secret = base64::encode(format!("username={},password={}", "aladdin", "sesam-open"));
+    let secret = base64::encode(format!("{}:{}", "kenneth", "password"));
  
     let step4 = reqwest::Client::new()
         .get(format!("http://{}",&gnap_session.redirect.unwrap()))
