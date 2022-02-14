@@ -14,7 +14,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                     ),
                 )
                 .service(
-                    web::resource("/{id}")
+                    web::resource("/{tx_id}")
                         .route(web::post().to(handlers::transaction::continue_request))
                 )
             )

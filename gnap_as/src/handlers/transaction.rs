@@ -45,9 +45,9 @@ pub async fn grant_request(
 pub async fn continue_request(
     service: web::Data<Service>,
     request: web::Json<GrantRequest>,
-    path: web::Path<String>
+    tx_id: web::Path<String>
 ) -> HttpResponse {
-    let result = process_continue_request(&service, request.into_inner(), &path).await;
+    let result = process_continue_request(&service, request.into_inner(), &tx_id.into_inner()).await;
     match result {
         Ok(data) => {
             trace!("processed grant request: {:?}", data);

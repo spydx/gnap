@@ -1,5 +1,6 @@
 //! Wrapper for MongoDB connections.
 //!
+use core::result::Result;
 use errors::GnapError;
 use futures::stream::TryStreamExt;
 use log::{debug, trace};
@@ -173,7 +174,7 @@ impl GnapDB {
                 Some(result) => {
                     trace!("Fetched an account");
                     Ok(Some(result))
-                }
+                },
                 None => {
                     trace!("Account not found");
                     Err(GnapError::NotFound)
@@ -193,7 +194,7 @@ impl GnapDB {
             Ok(_) => {
                 debug!("Added account: {:?}", &account);
                 Ok(account)
-            }
+            },
             Err(err) => {
                 debug!("Error saving account: {:?}", &err);
                 Err(GnapError::DatabaseError(err))
@@ -203,9 +204,74 @@ impl GnapDB {
 
     pub async fn add_transaction(&self, tx: GnapTransaction) -> Result<GnapTransaction, GnapError> {
         let collection = self.database.collection::<GnapTransaction>(COL_TRANSACTION);
-        Ok(tx)
+        match collection.insert_one(&tx, None).await {
+            Ok(_) => {
+                debug!("Added account: {:?}", &tx);
+                Ok(tx)
+            },
+            Err(err) => {
+                debug!("Error saving tx: {:?}", &err);
+                Err(GnapError::DatabaseError(err))
+            }
+        }        
+    }
+
+    pub async fn find_transaction(&self, tx_id: String) -> Result<Option<GnapTransaction>, GnapError> {
+       let cursor_result = self
+            .database
+            .collection::<GnapTransaction>(COL_TRANSACTION)
+            .find_one( doc! { "tx_id": &tx_id}, None)
+            .await
+            .map_err(GnapError::DatabaseError);
+        
+        match cursor_result {
+            Ok(result) => {
+                match result { 
+                    Some(tx) => {
+                        trace!("Fetched TX");
+                        Ok(Some(tx))
+                    },
+                    None => {
+                        trace!("Account not found");
+                        Err(GnapError::NotFound)
+                    }
+                }
+            },
+            Err(e) => {
+                trace!("get_account_by_id returned en error: {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
+    pub async fn delete_transaction(&self, tx_id: String) -> Result<(), GnapError> {
+        let collection = self.database.collection::<GnapTransaction>(COL_TRANSACTION);
+
+        match collection.delete_one(doc! { "tx_id": &tx_id}, None).await {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                Err(GnapError::DatabaseError(err))
+            }
+        }
+    }
+
+    pub async fn update_transaction(&self, tx: GnapTransaction) -> Result<GnapTransaction, GnapError> {
+        let cursor_result = self
+            .database
+            .collection::<GnapTransaction>(COL_TRANSACTION)
+            .find_one_and_replace(doc! {"tx_id": &tx.tx_id}, &tx,None)
+            .await
+            .map_err(GnapError::DatabaseError);
+
+        match cursor_result {
+            Ok(_) => Ok(tx),
+            Err(err) => {
+                Err(err)
+            }
+        }    
     }
 }
+
 
 #[cfg(test)]
 mod tests {
