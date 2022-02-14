@@ -1,5 +1,6 @@
 use model::grant::*;
 use uuid::Uuid;
+pub mod gnap_session;
 
 fn generate_nonce() -> String {
     Uuid::new_v4().to_simple().to_string()
@@ -27,7 +28,7 @@ pub fn make_request() -> GrantRequest {
         start: vec![InteractStartMode::Redirect],
         finish: Some(InteractFinishRequest {
             method: InteractFinishMethodType::Redirect,
-            uri: "localhost:3000/login".to_owned(),
+            uri: "localhost:8000/gnap/auth".to_owned(),
             nonce: generate_nonce(),
         }),
     };

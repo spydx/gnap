@@ -5,12 +5,14 @@ use model::gnap::GnapOptions;
 use model::grant::*;
 use pretty_env_logger;
 use std::error::Error as StdError;
+use gnap_client::gnap_session::GnapSession;
 
 const GNAP_AS_HOST: &str = "http://localhost:8000";
 
 fn as_path(part: &str) -> String {
     format!("{}/{}", GNAP_AS_HOST, part)
 }
+
 
 async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
     let path = as_path(".well-known/gnap-as-rs");
@@ -32,19 +34,26 @@ async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
 async fn main() -> Result<(), Box<dyn StdError>> {
     dotenv().ok();
     pretty_env_logger::init();
-
+    
+    
     // Get the GNAP well knowns from the server
     let options = get_config().await?;
 
+    let mut gnap_session = GnapSession::new_with_options(options.clone());
+
     // 2.
     let request = make_request();
+    let session = request.interact.clone().unwrap().finish.unwrap();
+    gnap_session.redirect = Some(session.uri.clone());
+    gnap_session.nonce = Some(session.nonce.clone());
+
     println!("Request: {:#?}", &request);
     trace!(
         "Using {}",
         &options.service_endpoints.grant_request_endpoint
     );
     // 3.
-    let response: GrantResponse = reqwest::Client::new()
+    let step3: GrantResponse = reqwest::Client::new()
         .post(options.service_endpoints.grant_request_endpoint)
         .json(&request)
         .send()
@@ -53,7 +62,25 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     // server http response
-    println!("Response: {:#?}", response);
+    println!("\nResponse: {:#?}", step3);
+
+    gnap_session.instance_id = Some(step3.instance_id);
+    gnap_session.tx_contiune = Some(step3.interact.unwrap().tx_continue.uri);
+    
+    let secret = base64::encode(format!("username={},password={}", "aladdin", "sesam-open"));
+ 
+    let step4 = reqwest::Client::new()
+        .get(format!("http://{}",&gnap_session.redirect.unwrap()))
+        .header("Content-type", "application/x-www-form-urlencoded")
+        .header("Authorization", "Basic ".to_owned() + &secret)
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    println!("Response {:#?}", step4);
+    //let step4: GrantResponse = reqwest::Client::new()
+    //    .post(step3.interact.unwrap()) 
 
     Ok(())
 }

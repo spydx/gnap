@@ -30,7 +30,7 @@ pub async fn process_request(
     // Start a transaction
     let tx = service.start_transaction(request.clone()).await?;
 
-    let uri = format!("http://locahost:8000/tx/{}", &tx.tx_id);
+    let uri = format!("http://locahost:8000/gnap/tx/{}", &tx.tx_id);
     let rc = RequestContinuation::as_uri(&uri.clone());
     let mut interact_response = InteractResponse {
         tx_continue: rc,
