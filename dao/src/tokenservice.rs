@@ -14,6 +14,8 @@ impl TokenService {
         let db_client = TokenDb::new().await;
         let cache_client = GnapCache::new().await;
 
+        let _ = db_client.prune_db().await.expect("Failed to prune");
+        
         TokenService {
             db_client,
             cache_client,

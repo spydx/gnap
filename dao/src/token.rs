@@ -1,5 +1,5 @@
 use errors::TokenError;
-use log::trace;
+use log::{debug, trace};
 use model::tokens::Token;
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use std::env;
@@ -29,6 +29,26 @@ impl TokenDb {
             client: client,
             database: db,
         }
+    }
+
+
+    pub async fn prune_db(&self) -> Result<(), TokenError> {
+        debug!("Pruning database");
+        let collection = self.database.collection::<Token>(COLLECTION);
+        let expire_filter = doc! { "expire": "0"};
+        let null_filter = doc! { "expire": null};
+
+        let _new = collection
+            .delete_many(expire_filter, None)
+            .await
+            .map_err(TokenError::DatabaseError);
+
+        let _null = collection
+            .delete_many(null_filter, None)
+            .await
+            .map_err(TokenError::DatabaseError);
+
+        Ok(())
     }
 
     pub async fn add_token(&self, token: &Token) -> Result<bool, TokenError> {

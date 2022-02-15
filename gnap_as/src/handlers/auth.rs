@@ -16,10 +16,9 @@ pub async fn auth(service: web::Data<AuthService>,
 ) -> HttpResponse {
     trace!("Auth");
     let login = basic_authentication(request.headers());
-    println!("Cred: {:#?}", login);
     match login {
         Ok(credentials) => {
-            println!("{:#?}", credentials.username);
+
             match service.validate_account(credentials, instance.into_inner()).await {
                 Ok(b) => {
                     let body = InstanceResponse::create(b);

@@ -33,7 +33,6 @@ impl AuthService {
     pub async fn validate_account(&self, credentials: Credentials, instance: InstanceRequest) -> Result<bool, AuthError> {
         trace!("Fetching User from database");
         let user = self.db_client.fetch_account(credentials.username).await?;
-        println!("{:#?}", user);
         if user.is_some() {
             match validate_password(user.clone().unwrap().password, credentials.password) {
                 Ok(_) => {
