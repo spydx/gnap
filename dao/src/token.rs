@@ -43,7 +43,7 @@ impl TokenDb {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .delete_one(doc! { "access_token": &token.access_token}, None)
+            .delete_one(doc! { "id": &token.id}, None)
             .await
             .map_err(TokenError::DatabaseError);
 
@@ -60,7 +60,7 @@ impl TokenDb {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .find_one_and_replace(doc! { "access_token": &token.access_token }, &token, None)
+            .find_one_and_replace(doc! { "id": &token.id }, &token, None)
             .await
             .map_err(TokenError::DatabaseError);
 
@@ -74,7 +74,7 @@ impl TokenDb {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .find_one( doc! { "access_token": &token.access_token }, None)
+            .find_one( doc! { "id": &token.id }, None)
             .await
             .map_err(TokenError::DatabaseError);
 

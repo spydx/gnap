@@ -2,22 +2,36 @@ use super::CachePath;
 use rand::Rng;
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Token {
-    pub access_token: String,
+    pub id: String,
+    pub access_token: Option<String>,
+    pub tx: Option<String>,
+    pub label: Option<String>,
+    pub expire: Option<u32>,
 }
 
 impl Token {
-    pub fn create() -> Self {
+    pub fn create(tx: String) -> Self {
+        let id = Uuid::new_v4().to_string();
         let access_token = generate_token();
         Self {
-            access_token: access_token,
+            id: id,
+            access_token: Some(access_token),
+            tx: Some(tx),
+            label: None,
+            expire: None
         }
     }
     pub fn from_string(s: String) -> Self {
         Self {
-            access_token: s
+            id: s,
+            access_token: None,
+            tx: None,
+            label: None,
+            expire: None,
         }
     }
 }

@@ -65,16 +65,6 @@ pub enum AccessRequest {
         data_types: Option<Vec<String>>,
     },
 }
-/* 
-impl PartialEq for AccessRequest {
-    fn eq(&self, other: &Self) -> bool {
-        if self.eq(other) {
-            true
-        } else {
-            false
-        }
-    }
-}*/
 /// Access Token portion of a grant request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessTokenRequest {
@@ -215,6 +205,22 @@ impl GrantRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContinuationAccessToken {}
 
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ContinuationRequest {
+    pub interact_ref: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub interact: Option<InteractRequest>
+}
+
+impl ContinuationRequest {
+    pub fn create_with_ref(int_ref: String) -> Self {
+        Self {
+            interact_ref: int_ref,
+            interact: None
+        }
+    }
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestContinuation {
     // The URI at which the client instance can
@@ -314,6 +320,8 @@ pub struct GrantResponse {
     pub instance_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interact: Option<InteractResponse>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<AccessToken>,
 }
 
 impl GrantResponse {
@@ -325,6 +333,7 @@ impl GrantResponse {
         Self {
             instance_id: Self::create_id(),
             interact: None,
+            access: None,
         }
     }
 }
@@ -337,7 +346,7 @@ mod tests {
     fn test1() {
         let tx_id = Uuid::new_v4().to_string();
 
-        let uri = format!("http://locahost:8000/tx/{}", &tx_id);
+        let uri = format!("http://localhost:8000/tx/{}", &tx_id);
         let rc = RequestContinuation::as_uri(&uri.clone());
 
         let ic = InteractResponse {
@@ -348,6 +357,7 @@ mod tests {
         let response = GrantResponse {
             instance_id: tx_id,
             interact: Some(ic),
+            access: None,
         };
 
         println!("{}", serde_json::to_string(&response).expect("oops"));

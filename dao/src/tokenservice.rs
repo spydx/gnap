@@ -20,6 +20,7 @@ impl TokenService {
         }
     }
 
+    
     pub async fn revoke_token(&self, token: &Token) -> Result<bool, TokenError> {
         match self.db_client.remove_token(&token).await {
             Ok(_) => Ok(true),

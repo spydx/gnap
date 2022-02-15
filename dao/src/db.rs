@@ -10,6 +10,7 @@ use model::{
     account::{Account, AccountRequest},
     client::{GnapClient, GnapClientRequest},
     gnap::GnapOptions,
+    tokens::Token,
 };
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use std::env;
@@ -26,6 +27,7 @@ const COL_TRANSACTIONOPTIONS: &str = "transaction_options";
 const COL_GNAPOPTIONS: &str = "service_config";
 const COL_ACCOUNTS: &str = "accounts";
 const COL_CLIENTS: &str = "clients";
+const COL_TOKEN: &str = "tokens";
 
 
 //const MONGO_URI: &str = "mongodb://127.0.0.1:27017";
@@ -238,7 +240,7 @@ impl GnapDB {
         }        
     }
 
-    pub async fn find_transaction(&self, tx_id: String) -> Result<Option<GnapTransaction>, GnapError> {
+    pub async fn get_transaction(&self, tx_id: String) -> Result<Option<GnapTransaction>, GnapError> {
        let cursor_result = self
             .database
             .collection::<GnapTransaction>(COL_TRANSACTION)
@@ -339,6 +341,13 @@ impl GnapDB {
         } else {
             debug!("Something went wrong, Transaction not found");
             Err(GnapError::NotFound)
+        }
+    }
+    pub async fn add_token(&self, token: &Token) -> Result<bool, GnapError> {
+        let collection = self.database.collection::<Token>(COL_TOKEN);
+        match collection.insert_one(token, None).await {
+            Ok(_) => Ok(true),
+            Err(err) => Err(GnapError::DatabaseError(err)),
         }
     }
 }

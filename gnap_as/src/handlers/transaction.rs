@@ -2,8 +2,8 @@
 use crate::grant::request::{process_request, process_continue_request};
 use actix_web::{web, HttpResponse};
 use dao::service::Service;
-use log::{error, trace};
-use model::grant::GrantRequest;
+use log::{error, trace, debug};
+use model::grant::{GrantRequest, ContinuationRequest};
 
 /// HTTP OPTIONS <as>/gnap/tx
 pub async fn grant_options(service: web::Data<Service>) -> HttpResponse {
@@ -44,10 +44,17 @@ pub async fn grant_request(
 /// HTTP POST <as>/gnap/tx/:id
 pub async fn continue_request(
     service: web::Data<Service>,
-    request: web::Json<GrantRequest>,
+    request: web::Json<ContinuationRequest>,
     tx_id: web::Path<String>
 ) -> HttpResponse {
-    let result = process_continue_request(&service, request.into_inner(), &tx_id.into_inner()).await;
+    
+    let hash = request.into_inner();
+    if hash.interact_ref.eq(&tx_id.clone().into_inner()) {
+        debug!("Valid hash");
+        // This hash should be validate after being computed at the client
+    }
+
+    let result = process_continue_request(&service, tx_id.into_inner()).await;
     match result {
         Ok(data) => {
             trace!("processed grant request: {:?}", data);

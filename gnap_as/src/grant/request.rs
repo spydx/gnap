@@ -1,8 +1,9 @@
 use dao::service::Service;
 use errors::GnapError;
 use log::{error, trace};
+use model::tokens::Token;
 use model::{grant::*, GnapID};
-
+use model::transaction::GnapTransactionState::*;
 pub async fn process_request(
     service: &Service,
     request: GrantRequest,
@@ -30,7 +31,7 @@ pub async fn process_request(
     // Start a transaction
     let tx = service.start_transaction(request.clone()).await?;
 
-    let uri = format!("http://locahost:8000/gnap/tx/{}", &tx.tx_id);
+    let uri = format!("http://localhost:8000/gnap/tx/{}", &tx.tx_id);
     let rc = RequestContinuation::as_uri(&uri.clone());
     let mut interact_response = InteractResponse {
         tx_continue: rc,
@@ -56,6 +57,7 @@ pub async fn process_request(
     let response = GrantResponse {
         instance_id: tx.tx_id.clone(),
         interact: Some(interact_response),
+        access: None,
     };
 
     Ok(response)
@@ -63,9 +65,46 @@ pub async fn process_request(
 
 
 pub async fn process_continue_request(
-    _service: &Service,
-    _request: GrantRequest,
-    _tx_id: &String
+    service: &Service,
+    tx_id: String
 ) -> Result<GrantResponse, GnapError>{
-    Err(GnapError::BadData)
+    let tx = match service.get_transaction(tx_id.clone()).await {
+        Ok(data) => data,
+        Err(err) => return Err(err)
+    };
+    
+    match tx.state {
+        Authorized => {
+            let t = Token::create(tx_id.clone());
+            let _ = service.store_token(t.clone())
+                .await
+                .expect("Failed to store token");
+
+            let grantrequest = tx.request.clone().unwrap();
+            let tokenrequest = grantrequest.access_token.first().unwrap();
+            let access_token = AccessToken {
+                label: None,
+                value: t.access_token.unwrap(),
+                manage: Some(format!("http://localhost:8000/gnap/token/{}", &t.id.to_owned())),
+                access: Some(tokenrequest.access.to_owned()),
+                key: None,
+                expires_in: t.expire,
+                flags: Some(vec! [AccessTokenFlag::Bearer])
+            };
+            let gr = GrantResponse { 
+                instance_id: tx.tx_id.clone(),
+                interact: None,
+                access: Some(access_token)
+                // missing subject
+            };
+            Ok(gr)
+        },
+        _ => {
+            Err(GnapError::BadData)
+        }
+    }
+
+    
+
+    
 }

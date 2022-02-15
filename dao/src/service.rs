@@ -17,6 +17,7 @@ use model::{
 };
 use redis::{AsyncCommands, Value};
 use uuid::Uuid;
+use model::tokens::Token;
 
 use super::cache::GnapCache;
 use super::db::GnapDB;
@@ -222,5 +223,22 @@ impl Service {
         let tx = self.db_client.add_transaction(tx.clone()).await?;
 
         Ok(tx)
+    }
+
+    pub async fn get_transaction(&self, tx_id: String) -> Result<GnapTransaction, GnapError> {
+
+        let tx = match self.db_client.get_transaction(tx_id).await {
+            Ok(data) => data,
+            Err(err) => return Err(err),
+        };
+
+        Ok(tx.unwrap())
+    }
+
+    pub async fn store_token(&self, token: Token) -> Result<(), GnapError> {
+        match self.db_client.add_token(&token).await {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 }

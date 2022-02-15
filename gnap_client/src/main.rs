@@ -69,16 +69,14 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     gnap_session.instance_id = Some(step3.instance_id);
     gnap_session.tx_contiune = Some(step3.interact.unwrap().tx_continue.uri);
     
-    let mut username = String::new();
-    let mut password = String::new();
+    //let (username, password ) = get_user_input().expect("Failed to get user input");
 
-    println!("Username: ");
-    io::stdin().read_line(&mut username)?;
-    println!("Password: ");
-    io::stdin().read_line(&mut password)?;
-    let secret = base64::encode(format!("{}:{}", username.trim_end(), password.trim_end()));
+    let (username, password) = ("kenneth", "password");
+
+    let secret = base64::encode(format!("{}:{}", username, password));
  
     let instance = InstanceRequest::create(gnap_session.instance_id.clone().unwrap());
+    
     let step4: InstanceResponse = reqwest::Client::new()
         .get(format!("http://{}",&gnap_session.redirect.unwrap()))
         .header("Content-type", "application/x-www-form-urlencoded")
@@ -90,12 +88,36 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     println!("Response: {:#?}", step4);
-    //let step4: GrantResponse = reqwest::Client::new()
-    //    .post(step3.interact.unwrap()) 
+    
+    let continue_request = ContinuationRequest::create_with_ref(gnap_session.instance_id.clone().unwrap());
+    let target = format!("{}", gnap_session.tx_contiune.unwrap());
+    println!("{}", target);
+    let step8: GrantResponse = reqwest::Client::new()
+        .post(target)
+        .json(&continue_request)
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    println!("Response: {:#?}", step8);
 
     Ok(())
 }
 
+
+#[allow(dead_code)]
+fn get_user_input() -> Result<(String, String), Box<dyn StdError>> {
+    let mut username = String::new();
+    let mut password = String::new();
+
+    println!("Username: ");
+    io::stdin().read_line(&mut username)?;
+    println!("Password: ");
+    io::stdin().read_line(&mut password)?;
+
+    Ok((username.trim_end().clone().to_string(), password.trim_end().clone().to_string()))
+}
 /*
 
 1.  The client instance establishes a verifiable session to the user, in the role of the end-user.
