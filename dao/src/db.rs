@@ -49,12 +49,10 @@ impl GnapDB {
         let client = Client::with_options(client_options).expect("Failed to create MongoDB client");
         let db = client.database(&database);
         
-        let res = Self {
+        Self {
             client: client,
             database: db,
-        };
-        let _ = res.prune_db().await.expect("Failed to prune database");
-        res
+        }
     }
 
     pub async fn prune_db(&self) -> Result<(), GnapError> {

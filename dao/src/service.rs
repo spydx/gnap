@@ -44,6 +44,8 @@ impl Service {
         // Create the db and cache instances.  This should really migrate to the
         // Service module.  But it works for now.
         let db_client = GnapDB::new().await;
+        let _ = db_client.prune_db().await.expect("Failed to prune database");
+
         let cache_client = GnapCache::new().await;
         Service {
             db_client,
