@@ -1,7 +1,9 @@
 use argon2::password_hash::SaltString;
 use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVerifier, Version};
+use model::instances::InstanceRequest;
 
 use super::auth::AuthDb;
+use super::db::GnapDB;
 use super::cache::GnapCache;
 use errors::AuthError;
 use log::trace;
@@ -11,6 +13,7 @@ use rand;
 
 pub struct AuthService {
     pub db_client: AuthDb,
+    pub db_gnap: GnapDB,
     pub cache_client: GnapCache,
 }
 
@@ -18,19 +21,32 @@ impl AuthService {
     pub async fn create() -> Self {
         let db = AuthDb::new().await;
         let cache_client = GnapCache::new().await;
+        let gnap = GnapDB::new().await;
+
         Self {
             cache_client: cache_client,
             db_client: db,
+            db_gnap: gnap
         }
     }
 
-    pub async fn validate_account(&self, credentials: Credentials) -> Result<bool, AuthError> {
+    pub async fn validate_account(&self, credentials: Credentials, instance: InstanceRequest) -> Result<bool, AuthError> {
         trace!("Fetching User from database");
         let result = self.db_client.fetch_account(credentials.username).await?;
+        println!("{:#?}", result);
         if result.is_some() {
             match validate_password(result.unwrap().password, credentials.password) {
-                Ok(_) => Ok(true),
-                Err(_) => Ok(false),
+                Ok(_) => {
+                    
+                    match self.db_gnap.authenticate_tx(instance.instance_id).await {
+                        Ok(_) => Ok(true),
+                        Err(_) => Err(AuthError::DatabaseNotFound)
+                    }
+                },
+                Err(_) => 
+                {   
+                    Ok(false)
+                },
             }
         } else {
             Ok(false)
@@ -99,6 +115,16 @@ mod test {
 
         let res =
             validate_password(hash, String::from("soSecretPassword")).expect("Failed to hash");
+        assert_eq!(res, ());
+    }
+
+    #[test]
+    fn check_validate_password() {
+        let password = String::from("password");
+
+        let hash = String::from("$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI");
+        let res = validate_password(hash, password).expect("it not to fail");
+
         assert_eq!(res, ());
     }
 }

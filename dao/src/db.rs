@@ -4,7 +4,7 @@ use core::result::Result;
 use errors::GnapError;
 use futures::stream::TryStreamExt;
 use log::{debug, trace};
-use model::transaction::{TransactionOptions, GnapTransaction};
+use model::transaction::{TransactionOptions, GnapTransaction, GnapTransactionState};
 use model::{
     account::{Account, AccountRequest},
     client::{GnapClient, GnapClientRequest},
@@ -269,6 +269,47 @@ impl GnapDB {
                 Err(err)
             }
         }    
+    }
+
+    pub async fn authenticate_tx(&self, tx_id: String) -> Result<(), GnapError> {
+        let filter = doc! {"tx_id": &tx_id };
+
+        let collection = self
+            .database
+            .collection::<GnapTransaction>(COL_TRANSACTION);
+
+        let cursor_result = collection
+            .find_one(filter.clone(), None)
+            .await
+            .map_err(GnapError::DatabaseError);
+
+        let tx = match cursor_result {
+            Ok(trans) => {
+                let tx_update = if trans.is_some() {
+                    let mut update = trans.unwrap();
+                    update.state = GnapTransactionState::Authorized;
+                    Some(update)
+                } else {
+                    None
+                };
+                tx_update
+          }, 
+            Err(_) => None,
+        };
+        
+        if tx.is_some() {
+            let res = collection
+                .find_one_and_replace(filter.clone(), &tx.unwrap(), None)
+                .await
+                .map_err(GnapError::DatabaseError);
+            match res {
+                Ok(_) => Ok(()),
+                Err(err) => Err(err),
+            }
+        } else {
+            debug!("Something went wrong, Transaction not found");
+            Err(GnapError::NotFound)
+        }
     }
 }
 

@@ -7,6 +7,7 @@ use pretty_env_logger;
 use std::error::Error as StdError;
 use gnap_client::gnap_session::GnapSession;
 use std::io;
+use model::instances::{InstanceRequest, InstanceResponse};
 
 const GNAP_AS_HOST: &str = "http://localhost:8000";
 
@@ -75,18 +76,20 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     io::stdin().read_line(&mut username)?;
     println!("Password: ");
     io::stdin().read_line(&mut password)?;
-    let secret = base64::encode(format!("{}:{}", username, password));
+    let secret = base64::encode(format!("{}:{}", username.trim_end(), password.trim_end()));
  
-    let step4 = reqwest::Client::new()
+    let instance = InstanceRequest::create(gnap_session.instance_id.clone().unwrap());
+    let step4: InstanceResponse = reqwest::Client::new()
         .get(format!("http://{}",&gnap_session.redirect.unwrap()))
         .header("Content-type", "application/x-www-form-urlencoded")
         .header("Authorization", "Basic ".to_owned() + &secret)
+        .json(&instance)
         .send()
         .await?
         .json()
         .await?;
 
-    println!("Response {:#?}", step4);
+    println!("Response: {:#?}", step4);
     //let step4: GrantResponse = reqwest::Client::new()
     //    .post(step3.interact.unwrap()) 
 

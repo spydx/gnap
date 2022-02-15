@@ -6,25 +6,29 @@ use dao::authservice::AuthService;
 use errors::AuthError;
 use log::trace;
 use model::credentials::Credentials;
+use model::instances::{InstanceRequest, InstanceResponse};
 
 // TODO:
 // GET <as>/gnap/auth
-pub async fn auth(service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
+pub async fn auth(service: web::Data<AuthService>, 
+    request: web::HttpRequest,
+    instance: web::Json<InstanceRequest>
+) -> HttpResponse {
     trace!("Auth");
     let login = basic_authentication(request.headers());
-
+    println!("Cred: {:#?}", login);
     match login {
         Ok(credentials) => {
             println!("{:#?}", credentials.username);
-            match service.validate_account(credentials).await {
+            match service.validate_account(credentials, instance.into_inner()).await {
                 Ok(b) => {
-                    if b {
-                        HttpResponse::Ok().json(b)
-                    } else {
-                        HttpResponse::Ok().json(b)
-                    }
-                }
-                Err(_) => HttpResponse::Unauthorized().body("unauthorized"),
+                    let body = InstanceResponse::create(b);
+                    HttpResponse::Ok().json(body)
+                },
+                Err(_) => {
+                    let json = InstanceResponse::create(false);
+                    HttpResponse::Unauthorized().json(json)
+                },
             }
         }
         Err(_) => HttpResponse::BadRequest().body("Invalid data"),
@@ -33,9 +37,11 @@ pub async fn auth(service: web::Data<AuthService>, request: web::HttpRequest) ->
 
 // TODO:
 // POST <as>/gnap/auth
-pub async fn create(service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
+pub async fn create(service: web::Data<AuthService>, 
+    request: web::HttpRequest) -> HttpResponse {
     trace!("User create");
     let account = basic_authentication(request.headers());
+   
     match account {
         Ok(user) => match service.create_account(user).await {
             Ok(b) => {
