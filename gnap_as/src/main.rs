@@ -5,7 +5,7 @@ use log::info;
 use pretty_env_logger;
 
 #[allow(unused_imports)]
-use gnap_as::{app_state, auth_state, get_ip_addresses, tls_builder};
+use gnap_as::{app_state, auth_state, get_ip_addresses, tls_builder, token_state};
 mod grant;
 mod handlers;
 mod routes;
@@ -32,18 +32,20 @@ async fn main() -> std::io::Result<()> {
     // Set up the shared application state
     let app_state = app_state().await;
     let auth_state = auth_state().await;
-
+    let token_state = token_state().await;
+    
     // Create the actix-web App instance, with middleware and routes.
     let app = move || {
         App::new()
             // Enable app state data, including DB and Cache stuff.
             .app_data(app_state.clone())
             .app_data(auth_state.clone())
+            .app_data(token_state.clone())
             // Add each of the router modules.
             .configure(routes::db::routes)
             .configure(routes::well_known::routes)
             .configure(routes::transaction::routes)
-            .configure(routes::token::routes)
+            //.configure(routes::token::routes)
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
     };

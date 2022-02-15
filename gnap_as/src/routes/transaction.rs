@@ -4,7 +4,6 @@ use actix_web::{http, web};
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/gnap")
-            
             .service(
                 web::scope("/tx")
                 .service(
@@ -19,15 +18,25 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                 )
             )
             .service(
-                web::resource("/introspect").route(web::post().to(handlers::resources::introspect)),
+        web::resource("/introspect")
+                    .route(web::post().to(handlers::resources::introspect)),
             )
             .service(
-                web::resource("/resource").route(web::post().to(handlers::resources::resource)),
+        web::resource("/resource")
+                    .route(web::post().to(handlers::resources::resource)),
             )
             .service(
-                web::resource("/auth")
+        web::resource("/auth")
                     .route(web::get().to(handlers::auth::auth))
                     .route(web::post().to(handlers::auth::create)),
+            )
+            .service(
+            web::scope("/token")
+                .service(
+                web::resource("/{token_id}")
+                    .route(web::post().to(handlers::tokens::rotate_token))
+                    .route(web::delete().to(handlers::tokens::revoke_token)),
+                )
             ),
     );
 }
