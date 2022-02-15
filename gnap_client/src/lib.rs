@@ -8,17 +8,17 @@ fn generate_nonce() -> String {
 
 pub fn make_request() -> GrantRequest {
     let client_id = "7e057b0c-17e8-4ab4-9260-2b33f32b2cce".to_owned();
-    let ac_foo = AccessRequest::Reference("foo".to_owned());
+    //let ac_foo = AccessRequest::Reference("foo".to_owned());
     let ac_ref = AccessRequest::Value {
-        resource_type: "bar".to_owned(),
-        actions: Some(vec!["read".to_owned(), "write".to_owned()]),
-        locations: None,
+        resource_type: "waterbowl-access".to_owned(),
+        actions: Some(vec!["read".to_owned(), "create".to_owned()]),
+        locations: Some(vec!["https://localhost:8080/bowls/".to_owned()]),
         data_types: None,
     };
 
     let at = AccessTokenRequest {
-        label: Some("my_label".to_owned()),
-        access: vec![ac_foo, ac_ref],
+        label: Some("bowls".to_owned()),
+        access: vec![ac_ref],
         flags: Some(vec![AccessTokenFlag::Bearer]),
     };
 

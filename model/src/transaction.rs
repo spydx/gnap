@@ -151,9 +151,24 @@ impl GnapTransaction {
     pub fn new(request: Option<GrantRequest>) -> Self {
         Self {
             tx_id: Self::create_id(),
-            state: GnapTransactionState::New,
+            state: GnapTransactionState::Waiting,
             request: request,
         }
+    }
+    
+    pub fn update_state(self, state: GnapTransactionState) -> Self {
+        Self {
+            state: state,
+            ..self
+        }
+    }
+    pub fn update_grantrequest(self, user: String) -> Self {
+        let gr = self.request.unwrap().add_user(user);
+        Self {
+            request: Some(gr),
+            ..self
+        }
+
     }
 }
 

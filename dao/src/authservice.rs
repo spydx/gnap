@@ -32,13 +32,12 @@ impl AuthService {
 
     pub async fn validate_account(&self, credentials: Credentials, instance: InstanceRequest) -> Result<bool, AuthError> {
         trace!("Fetching User from database");
-        let result = self.db_client.fetch_account(credentials.username).await?;
-        println!("{:#?}", result);
-        if result.is_some() {
-            match validate_password(result.unwrap().password, credentials.password) {
+        let user = self.db_client.fetch_account(credentials.username).await?;
+        println!("{:#?}", user);
+        if user.is_some() {
+            match validate_password(user.clone().unwrap().password, credentials.password) {
                 Ok(_) => {
-                    
-                    match self.db_gnap.authenticate_tx(instance.instance_id).await {
+                    match self.db_gnap.authenticate_tx(instance.instance_id, user.unwrap()).await {
                         Ok(_) => Ok(true),
                         Err(_) => Err(AuthError::DatabaseNotFound)
                     }
@@ -63,6 +62,7 @@ impl AuthService {
             id: id,
             username: credentials.username,
             password: password_hash,
+            access: None,
         };
 
         match self.db_client.add_user(user).await {

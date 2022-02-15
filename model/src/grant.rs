@@ -65,7 +65,16 @@ pub enum AccessRequest {
         data_types: Option<Vec<String>>,
     },
 }
-
+/* 
+impl PartialEq for AccessRequest {
+    fn eq(&self, other: &Self) -> bool {
+        if self.eq(other) {
+            true
+        } else {
+            false
+        }
+    }
+}*/
 /// Access Token portion of a grant request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessTokenRequest {
@@ -195,6 +204,14 @@ impl GnapID for GrantRequest {
     }
 }
 
+impl GrantRequest {
+    pub fn add_user(self, user: String) -> Self {
+        Self {
+            user: Some(user),
+            ..self
+        }
+    }
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContinuationAccessToken {}
 

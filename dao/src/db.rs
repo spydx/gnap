@@ -6,6 +6,7 @@ use futures::stream::TryStreamExt;
 use log::{debug, trace};
 use model::transaction::{TransactionOptions, GnapTransaction, GnapTransactionState};
 use model::{
+    users::User,
     account::{Account, AccountRequest},
     client::{GnapClient, GnapClientRequest},
     gnap::GnapOptions,
@@ -45,10 +46,31 @@ impl GnapDB {
         // Create the client and grab a database handle
         let client = Client::with_options(client_options).expect("Failed to create MongoDB client");
         let db = client.database(&database);
-        Self {
+        
+        let res = Self {
             client: client,
             database: db,
-        }
+        };
+        let _ = res.prune_db().await.expect("Failed to prune database");
+        res
+    }
+
+    pub async fn prune_db(&self) -> Result<(), GnapError> {
+        debug!("Pruning database");
+        let collection = self.database.collection::<GnapTransaction>(COL_TRANSACTION);
+        let new_filter = doc! { "state": "new"};
+        let waiting_filter = doc! { "state": "waiting"};
+        let _new = collection
+            .delete_many(new_filter, None)
+            .await
+            .map_err(GnapError::DatabaseError);
+
+        let _waiting = collection
+            .delete_many(waiting_filter, None)
+            .await
+            .map_err(GnapError::DatabaseError);
+
+        Ok(())
     }
 
     pub async fn list_databases(&self) -> Result<Vec<String>, GnapError> {
@@ -271,7 +293,7 @@ impl GnapDB {
         }    
     }
 
-    pub async fn authenticate_tx(&self, tx_id: String) -> Result<(), GnapError> {
+    pub async fn authenticate_tx(&self, tx_id: String, user: User) -> Result<(), GnapError> {
         let filter = doc! {"tx_id": &tx_id };
 
         let collection = self
@@ -283,11 +305,19 @@ impl GnapDB {
             .await
             .map_err(GnapError::DatabaseError);
 
+    
         let tx = match cursor_result {
             Ok(trans) => {
+
                 let tx_update = if trans.is_some() {
-                    let mut update = trans.unwrap();
-                    update.state = GnapTransactionState::Authorized;
+                    match validate_user_access(user.clone(), trans.clone().unwrap()) {
+                        Ok(_) => {},
+                        Err(err) => return Err(err)
+                    }
+                    let update = trans
+                        .unwrap()
+                        .update_state(GnapTransactionState::Authorized)
+                        .update_grantrequest(user.id);
                     Some(update)
                 } else {
                     None
@@ -313,11 +343,185 @@ impl GnapDB {
     }
 }
 
+fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError> {
+    let grant = tx.request.unwrap();
+    let user_access = user.access.unwrap();
+    debug!("Lets VALIDATE");
+    for wanted_access_tokens in grant.access_token.into_iter() {
+        for wanted_access in wanted_access_tokens.access.into_iter() {
+            let b = user_access.contains(&wanted_access);
+            debug!("Access: {:#?}", wanted_access);
+            debug!("Validated: {:#?}", b);
+            if !b {
+                return Err(GnapError::AccessMismatch)
+            }
+    
+        }
+    }
+
+    Ok(())
+}
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
+    }
+
+    const TX_DATA: &str = r#"{
+        "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
+        "state": "new",
+        "request": {
+            "access_token": [
+                {
+                    "access": [
+                        "foo",
+                        {
+                            "type": "bar",
+                            "actions": [
+                                "read",
+                                "write"
+                            ]
+                        }
+                    ],
+                    "label": "my_label",
+                    "flags": [
+                        "bearer"
+                    ]
+                }
+            ],
+            "subject": null,
+            "client": "7e057b0c-17e8-4ab4-9260-2b33f32b2cce",
+            "user": null,
+            "interact": {
+                "start": [
+                    "redirect"
+                ],
+                "finish": {
+                    "method": "redirect",
+                    "uri": "localhost:8000/gnap/auth",
+                    "nonce": "419b6c799164494bb04958d04152e2b4"
+                }
+            }
+        }
+    }
+  "#;
+
+  const TX_DATA_OK: &str = r#"{
+    "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
+    "state": "new",
+    "request": {
+        "access_token": [
+            {
+                "access": [
+                    {
+                        "type": "waterbowl-access",
+                        "actions": [
+                            "read",
+                            "create"
+                        ],
+                        "locations": [
+                            "https://localhost:8080/bowls/"
+                        ]
+                    },
+                    {
+                        "type": "waterlevel-access",
+                        "actions": [
+                            "read",
+                            "create"
+                        ],
+                        "locations": [
+                            "https://localhost:8080/bowls/waterlevels/"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "subject": null,
+        "client": "7e057b0c-17e8-4ab4-9260-2b33f32b2cce",
+        "user": null,
+        "interact": {
+            "start": [
+                "redirect"
+            ],
+            "finish": {
+                "method": "redirect",
+                "uri": "localhost:8000/gnap/auth",
+                "nonce": "419b6c799164494bb04958d04152e2b4"
+            }
+        }
+    }
+}
+  "#;
+
+    const USER_DATA: &str = r#"{
+        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "username": "kenneth",
+        "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
+        "access": [
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/"
+                ]
+            },
+            {
+                "type": "waterlevel-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/waterlevels/"
+                ]
+            }
+        ]
+    }"#;
+
+    #[test]
+    fn parse_user() {
+        let _: User = serde_json::from_str(USER_DATA).unwrap();
+    }
+
+    #[test]
+    fn parse_tx() {
+        let _: GnapTransaction= serde_json::from_str(TX_DATA).unwrap();
+    }
+
+
+    #[test]
+    fn parse_tx_ok() {
+        let _: GnapTransaction= serde_json::from_str(TX_DATA_OK).unwrap();
+    }
+
+    #[test]
+    fn test_validate_user_access() {
+        let user = serde_json::from_str(USER_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA).unwrap();
+
+        let res = validate_user_access(user, tx);
+        match res {
+            Ok(_) => assert!(false),
+            Err(_) => assert!(true)
+        }
+    }
+
+    #[test]
+    fn test_validate_user_access_ok() {
+        let user = serde_json::from_str(USER_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA_OK).unwrap();
+
+        let res = validate_user_access(user, tx);
+        match res {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false)
+        }
     }
 }

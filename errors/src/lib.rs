@@ -3,6 +3,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum GnapError {
+    #[error("Wrong access tokens")]
+    AccessMismatch,
     #[error("mongodb error: {0}")]
     DatabaseError(#[from] mongodb::error::Error),
     #[error("could not access field in document: {0}")]

@@ -2,12 +2,15 @@ use super::CachePath;
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use super::grant::AccessRequest;
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct User {
     pub id: String,
     pub username: String,
     pub password: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<Vec<AccessRequest>>
 }
 
 impl User {
