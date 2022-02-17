@@ -6,10 +6,10 @@ use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
 
 use super::CachePath;
-
+pub type KeyProof = String;
+pub type KeyProofs = Vec<KeyProof>;
 pub type InteractionStartModes = Vec<String>;
 pub type InteractionFinishMethods = Vec<String>;
-pub type KeyProofs = Vec<String>;
 pub type SubjectFormats = Vec<String>;
 pub type Assertions = Vec<String>;
 pub type TokenFormats = Vec<String>;

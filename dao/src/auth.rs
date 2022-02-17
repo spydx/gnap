@@ -9,6 +9,8 @@ pub struct AuthDb {
     pub database: Database,
 }
 
+const COLLECTION: &str = "users";
+
 impl AuthDb {
     pub async fn new() -> Self {
         let mongo_uri = env::var("MONGODB_URI").expect("MONGODB_URI missing");
@@ -32,7 +34,7 @@ impl AuthDb {
     pub async fn fetch_account(&self, username: String) -> Result<Option<User>, AuthError> {
         let cursor_result = self
             .database
-            .collection::<User>("users")
+            .collection::<User>(COLLECTION)
             .find_one(doc! { "username": &username}, None)
             .await
             .map_err(AuthError::DatabaseError);
@@ -53,7 +55,7 @@ impl AuthDb {
     }
 
     pub async fn add_user(&self, user: User) -> Result<bool, AuthError> {
-        let collection = self.database.collection::<User>("users");
+        let collection = self.database.collection::<User>(COLLECTION);
 
         match collection.insert_one(user, None).await {
             Ok(_) => Ok(true),

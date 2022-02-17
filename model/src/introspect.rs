@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use void::Void;
 
+use crate::grant::AccessRequest;
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct IntrospectRequest {
     access_token: String,
@@ -10,7 +12,16 @@ pub struct IntrospectRequest {
     proof: Option<String>,
     resource_server: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    access: Option<Vec<String>>,
+    access: Option<AccessRequest>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct InstrospectResponse {
+    pub active: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<AccessRequest>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub key: Option<String>,
 }
 
 impl FromStr for IntrospectRequest {

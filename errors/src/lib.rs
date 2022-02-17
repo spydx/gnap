@@ -38,6 +38,14 @@ pub enum AuthError {
 }
 
 #[derive(Error, Debug)]
+pub enum ResourceError {
+    #[error("Can't store a RS in the database")]
+    DatabaseError(#[from] mongodb::error::Error),
+    #[error("General error")]
+    GeneralError
+}
+
+#[derive(Error, Debug)]
 pub enum TokenError {
     #[error("General error")]
     InvalidToken,

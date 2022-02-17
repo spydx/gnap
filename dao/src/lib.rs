@@ -17,6 +17,7 @@ pub mod db;
 pub mod service;
 pub mod token;
 pub mod tokenservice;
+pub mod resource;
 
 #[cfg(test)]
 mod tests {
