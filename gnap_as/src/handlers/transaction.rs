@@ -1,9 +1,9 @@
 //! Transaction API Handlers
-use crate::grant::request::{process_request, process_continue_request};
+use crate::grant::request::{process_continue_request, process_request};
 use actix_web::{web, HttpResponse};
 use dao::service::Service;
-use log::{error, trace, debug};
-use model::grant::{GrantRequest, ContinuationRequest};
+use log::{debug, error, trace};
+use model::grant::{ContinuationRequest, GrantRequest};
 
 /// HTTP OPTIONS <as>/gnap/tx
 pub async fn grant_options(service: web::Data<Service>) -> HttpResponse {
@@ -45,9 +45,8 @@ pub async fn grant_request(
 pub async fn continue_request(
     service: web::Data<Service>,
     request: web::Json<ContinuationRequest>,
-    tx_id: web::Path<String>
+    tx_id: web::Path<String>,
 ) -> HttpResponse {
-    
     let hash = request.into_inner();
     if hash.interact_ref.eq(&tx_id.clone().into_inner()) {
         debug!("Valid hash");

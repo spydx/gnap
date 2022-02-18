@@ -42,7 +42,6 @@ pub async fn rs_state() -> web::Data<ResourceService> {
     rs_state
 }
 
-
 /// Get addresses from ENV
 ///
 /// This doesn't really havea ny value.  But fun to play with. We could just

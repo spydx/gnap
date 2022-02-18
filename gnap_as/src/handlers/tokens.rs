@@ -2,9 +2,9 @@
 
 use actix_web::{web, HttpResponse};
 use dao::token_service::TokenService;
-use log::{trace,debug};
-use mongodb::bson::doc;
+use log::{debug, trace};
 use model::tokens::Token;
+use mongodb::bson::doc;
 
 pub async fn revoke_token(
     service: web::Data<TokenService>,

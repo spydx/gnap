@@ -2,8 +2,8 @@ use dao::service::Service;
 use errors::GnapError;
 use log::{error, trace};
 use model::tokens::Token;
-use model::{grant::*, GnapID};
 use model::transaction::GnapTransactionState::*;
+use model::{grant::*, GnapID};
 pub async fn process_request(
     service: &Service,
     request: GrantRequest,
@@ -63,20 +63,20 @@ pub async fn process_request(
     Ok(response)
 }
 
-
 pub async fn process_continue_request(
     service: &Service,
-    tx_id: String
-) -> Result<GrantResponse, GnapError>{
+    tx_id: String,
+) -> Result<GrantResponse, GnapError> {
     let tx = match service.get_transaction(tx_id.clone()).await {
         Ok(data) => data,
-        Err(err) => return Err(err)
+        Err(err) => return Err(err),
     };
-    
+
     match tx.state {
         Authorized => {
             let t = Token::create(tx_id.clone());
-            let _ = service.store_token(t.clone())
+            let _ = service
+                .store_token(t.clone())
                 .await
                 .expect("Failed to store token");
 
@@ -85,26 +85,22 @@ pub async fn process_continue_request(
             let access_token = AccessToken {
                 label: None,
                 value: t.access_token.unwrap(),
-                manage: Some(format!("http://localhost:8000/gnap/token/{}", &t.id.to_owned())),
+                manage: Some(format!(
+                    "http://localhost:8000/gnap/token/{}",
+                    &t.id.to_owned()
+                )),
                 access: Some(tokenrequest.access.to_owned()),
                 key: None,
                 expires_in: t.expire,
-                flags: Some(vec! [AccessTokenFlag::Bearer])
+                flags: Some(vec![AccessTokenFlag::Bearer]),
             };
-            let gr = GrantResponse { 
+            let gr = GrantResponse {
                 instance_id: tx.tx_id.clone(),
                 interact: None,
-                access: Some(access_token)
-                // missing subject
+                access: Some(access_token), // missing subject
             };
             Ok(gr)
-        },
-        _ => {
-            Err(GnapError::BadData)
         }
+        _ => Err(GnapError::BadData),
     }
-
-    
-
-    
 }
