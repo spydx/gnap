@@ -359,14 +359,14 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
             let b = user_access.contains(&wanted_access);
             debug!("Access: {:#?}", wanted_access);
             debug!("Validated: {:#?}", b);
-            if !b {
-                return Err(GnapError::AccessMismatch)
+            if b {
+                return Ok(())
             }
     
         }
     }
 
-    Ok(())
+    Err(GnapError::AccessMismatch)
 }
 
 #[cfg(test)]

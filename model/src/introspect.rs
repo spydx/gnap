@@ -7,12 +7,12 @@ use crate::grant::AccessRequest;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct IntrospectRequest {
-    access_token: String,
+    pub access_token: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    proof: Option<String>,
-    resource_server: String,
+    pub proof: Option<String>,
+    pub resource_server: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    access: Option<AccessRequest>,
+    pub access: Option<AccessRequest>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

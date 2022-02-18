@@ -31,8 +31,6 @@ impl TokenService {
     }
 
     pub async fn rotate_token(&self, token: Token) -> Result<Token, TokenError> {
-
-
         match self.db_client.fetch_token(&token).await {
             Ok(newtoken) => {
                 let _ = self
@@ -46,6 +44,22 @@ impl TokenService {
                 }
             },
             Err(_) => Err(TokenError::RotateToken)
+        }
+    }
+    pub async fn validate_token(&self, token_id: String) -> Result<(), TokenError> {
+        
+        match self.db_client.fetch_token_by_id(token_id).await {
+            Ok(t) =>{
+                if t.expire.is_some() {
+                    // this is not enterily correct, but will do for out poc
+                    Ok(())
+                } else {
+                    Err(TokenError::InvalidToken)
+                }
+            },
+            Err(_) => {
+                Err(TokenError::InvalidToken)
+            }
         }
     }
 }

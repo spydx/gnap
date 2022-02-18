@@ -115,4 +115,31 @@ impl TokenDb {
             Ok(res_token.unwrap())
         }
     }
+
+
+    pub async fn fetch_token_by_id(&self, token_id: String) -> Result<Token, TokenError> {
+        let cursor_result = self
+            .database
+            .collection::<Token>(COLLECTION)
+            .find_one( doc! { "id": &token_id }, None)
+            .await
+            .map_err(TokenError::DatabaseError);
+
+        let res_token = match cursor_result {
+            Ok(stored_token) => {
+                if stored_token.is_some() {
+                    stored_token
+                } else {
+                    None
+                }
+            },
+            Err(_) => None
+        };
+
+        if res_token.is_none() {
+            Err(TokenError::NotFound)
+        } else {
+            Ok(res_token.unwrap())
+        }
+    }
 }

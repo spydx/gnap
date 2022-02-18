@@ -39,6 +39,10 @@ pub enum AuthError {
 
 #[derive(Error, Debug)]
 pub enum ResourceError {
+    #[error("Unable to determin if RS has access")]
+    AccessNotFound,
+    #[error("Can't find RS in with identifier")]
+    NotFound,
     #[error("Can't store a RS in the database")]
     DatabaseError(#[from] mongodb::error::Error),
     #[error("General error")]

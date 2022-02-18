@@ -55,4 +55,19 @@ impl ResourceDB {
             Err(err) => Err(ResourceError::DatabaseError(err))
         }
     }
+
+    pub async fn fetch_resource_server(&self, resource_server: String) -> Result<Option<GnapResourceServer>, ResourceError> {
+        trace!("looking for resource server");
+        let collection = self.database.collection::<GnapResourceServer>(COLLECTION);
+
+        let filter = doc! { "resource_server": &resource_server };
+
+        match collection.find_one(filter, None).await {
+            Ok(data) => Ok(data),
+            Err(_) => {
+                trace!("Not found");
+                Ok(None)
+            }
+        }
+    }
 }

@@ -2,23 +2,25 @@
 
 use actix_web::{web, HttpResponse};
 use dao::resource_service::ResourceService;
-use dao::service::Service;
 use log::{error, trace};
-use model::introspect::{InstrospectResponse, IntrospectRequest};
+use model::introspect::IntrospectRequest;
 use model::resource::{GnapRegisterResourceServer, GnapResourceServer};
 use mongodb::bson::doc;
 
 /// HTTP POST  <as>/gnap/introspect
 pub async fn introspect(
-    _service: web::Data<Service>,
-    _introrequest: web::Json<IntrospectRequest>,
+    service: web::Data<ResourceService>,
+    introrequest: web::Json<IntrospectRequest>,
 ) -> HttpResponse {
-    let ir = InstrospectResponse {
-        active: true,
-        access: None,
-        key: None,
-    };
-    HttpResponse::Ok().json(ir)
+    let ir = introrequest.into_inner();
+
+    match service.introspect_token(ir).await {
+        Ok(data) => HttpResponse::Ok().json(data),
+        Err(_) => {
+            trace!("Unable to verify token");
+            HttpResponse::InternalServerError().json(doc! { "status": "error"})
+        }
+    }
 }
 
 /// HTTP POST  <as>/gnap/resource
