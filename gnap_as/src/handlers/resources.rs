@@ -26,9 +26,8 @@ pub async fn register_resources_set(
     service: web::Data<ResourceService>,
     rs: web::Json<GnapResourceServer>,
 ) -> HttpResponse {
-
     let rs = rs.into_inner();
-    match service.register_resources_set(rs).await { 
+    match service.register_resources_set(rs).await {
         Ok(_) => {
             trace!("Registered");
             HttpResponse::Ok().json(doc! { "status": "registered"})
