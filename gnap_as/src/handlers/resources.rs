@@ -3,8 +3,9 @@
 use actix_web::{web, HttpResponse};
 use dao::resource_service::ResourceService;
 use dao::service::Service;
-// use log::{error, trace};
-use model::resource::GnapResourceServer;
+use mongodb::bson::doc;
+use log::{error, trace};
+use model::resource::{GnapResourceServer, GnapRegisterResourceServer};
 use model::introspect::{IntrospectRequest, InstrospectResponse};
 
 
@@ -31,5 +32,19 @@ pub async fn register_resources_set(
     HttpResponse::Ok().json("{OK resource}")
 }
 
+pub async fn register_resource_server(
+    service: web::Data<ResourceService>,
+    rs: web::Json<GnapRegisterResourceServer>
+) -> HttpResponse {
+    let rs = rs.into_inner();
+    match service.add_resource_server(rs).await {
+        Ok(_) => {
+            trace!("Created");
+            HttpResponse::Ok().json(doc! { "status": "created"})},
+        Err(_) => {
+            error!("Something went horribly wrong");
+            HttpResponse::InternalServerError().json(doc! {"status": "failed"})}
+    }
+}
 
 

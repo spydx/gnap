@@ -17,6 +17,15 @@ use crate::grant::AccessRequest;
 
 
 #[derive(Serialize ,Deserialize)]
+pub struct GnapRegisterResourceServer {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_server_name: Option<String>, 
+    pub resource_server_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<Vec<AccessRequest>>,
+}
+
+#[derive(Serialize ,Deserialize)]
 pub struct GnapResourceServer {
     pub resource_server: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -24,6 +33,19 @@ pub struct GnapResourceServer {
     pub resource_server_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access: Option<Vec<AccessRequest>>,
+}
+
+impl GnapResourceServer {
+    pub fn create(register: GnapRegisterResourceServer) -> Self {
+        let id = Uuid::new_v4().to_string();
+
+        Self {
+            resource_server: id,
+            resource_server_name: register.resource_server_name,
+            resource_server_key: register.resource_server_key,
+            access: register.access
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]

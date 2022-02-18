@@ -22,8 +22,14 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
                     .route(web::post().to(handlers::resources::introspect)),
             )
             .service(
-        web::resource("/resource")
-                    .route(web::post().to(handlers::resources::register_resources_set)),
+                web::scope("/resource")
+                .service(
+            web::resource("")
+                        .route(web::post().to(handlers::resources::register_resources_set)))
+                .service(
+                    web::resource("/new")
+                        .route(web::post().to(handlers::resources::register_resource_server))
+                )
             )
             .service(
         web::resource("/auth")

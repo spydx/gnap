@@ -1,4 +1,4 @@
-use model::resource::GnapResourceServer;
+use model::resource::{GnapResourceServer, GnapRegisterResourceServer};
 
 use crate::{resource::ResourceDB, cache::GnapCache};
 use errors::ResourceError;
@@ -20,7 +20,9 @@ impl ResourceService {
         }
     }
 
-    pub async fn add_resource_server(&self, rs: GnapResourceServer) -> Result<(), ResourceError> {
+    pub async fn add_resource_server(&self, rs: GnapRegisterResourceServer) -> Result<(), ResourceError> {
+
+        let rs = GnapResourceServer::create(rs);
         match self.db_client.add_resource(rs).await {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
