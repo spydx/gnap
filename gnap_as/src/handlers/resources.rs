@@ -1,6 +1,7 @@
 //! Transaction API Handlers
 
 use actix_web::{web, HttpResponse};
+use dao::resource_service::ResourceService;
 use dao::service::Service;
 // use log::{error, trace};
 use model::resource::GnapResourceServer;
@@ -24,7 +25,7 @@ pub async fn introspect(
 
 /// HTTP POST  <as>/gnap/resource
 pub async fn register_resources_set(
-    _service: web::Data<Service>,
+    _service: web::Data<ResourceService>,
     _client: web::Json<GnapResourceServer>,
 ) -> HttpResponse {
     HttpResponse::Ok().json("{OK resource}")

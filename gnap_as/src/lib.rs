@@ -1,5 +1,6 @@
 use actix_web::web;
 use dao::auth_service::AuthService;
+use dao::resource_service::ResourceService;
 use dao::service::Service;
 use dao::token_service::TokenService;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslFiletype, SslMethod};
@@ -34,6 +35,13 @@ pub async fn token_state() -> web::Data<TokenService> {
 
     token_state
 }
+
+pub async fn rs_state() -> web::Data<ResourceService> {
+    let rs_service = ResourceService::create().await;
+    let rs_state = web::Data::new(rs_service);
+    rs_state
+}
+
 
 /// Get addresses from ENV
 ///
