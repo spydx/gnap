@@ -43,4 +43,16 @@ impl ResourceDB {
             Err(err) => Err(ResourceError::DatabaseError(err))
         }
     }
+
+    pub async fn add_access_to_resources(&self, access: GnapResourceServer) -> Result<(), ResourceError> {
+        trace!("updating access sets");
+
+        let collection = self.database.collection::<GnapResourceServer>(COLLECTION);
+        let filter = doc! { "resource_server": &access.resource_server};
+
+        match collection.find_one_and_replace(filter, access, None).await {
+            Ok(_) => Ok(()),
+            Err(err) => Err(ResourceError::DatabaseError(err))
+        }
+    }
 }
