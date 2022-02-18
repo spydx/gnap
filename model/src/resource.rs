@@ -9,9 +9,22 @@
 
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
+use std::{str::FromStr};
 use uuid::Uuid;
 use void::Void;
+
+use crate::grant::AccessRequest;
+
+
+#[derive(Serialize ,Deserialize)]
+pub struct GnapResourceServer {
+    pub resource_server: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resource_server_name: Option<String>, 
+    pub resource_server_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub access: Option<Vec<AccessRequest>>,
+}
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct ResourceEntitlement {

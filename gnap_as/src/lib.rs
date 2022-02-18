@@ -1,7 +1,7 @@
 use actix_web::web;
-use dao::authservice::AuthService;
+use dao::auth_service::AuthService;
 use dao::service::Service;
-use dao::tokenservice::TokenService;
+use dao::token_service::TokenService;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslFiletype, SslMethod};
 use std::env;
 use std::net::SocketAddr;

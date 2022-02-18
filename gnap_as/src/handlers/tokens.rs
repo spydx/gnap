@@ -1,7 +1,7 @@
 //! Token API Handlers
 
 use actix_web::{web, HttpResponse};
-use dao::tokenservice::TokenService;
+use dao::token_service::TokenService;
 use log::{trace,debug};
 use mongodb::bson::doc;
 use model::tokens::Token;

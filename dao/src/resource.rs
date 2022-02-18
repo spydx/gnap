@@ -1,9 +1,11 @@
+#[allow(unused_imports)]
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use std::env;
 use log::trace;
 use errors::ResourceError;
-use model::resource::ResourceEntitlement;
+use model::resource::{GnapResourceServer};
 
+#[derive(Clone)]
 pub struct ResourceDB {
     pub client: Client,
     pub database: Database,
@@ -32,10 +34,10 @@ impl ResourceDB {
         }
     }
 
-    pub async fn add_resource(&self, resource: ResourceEntitlement) -> Result<(), ResourceError> {
+    pub async fn add_resource(&self, resource: GnapResourceServer) -> Result<(), ResourceError> {
         trace!("Adding resource server");
 
-        let collection = self.database.collection::<ResourceEntitlement>(COLLECTION);
+        let collection = self.database.collection::<GnapResourceServer>(COLLECTION);
         match collection.insert_one(resource, None).await {
             Ok(_) => Ok(()),
             Err(err) => Err(ResourceError::DatabaseError(err))

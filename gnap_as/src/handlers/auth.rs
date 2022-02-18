@@ -2,7 +2,7 @@
 
 use actix_web::http::header::HeaderMap;
 use actix_web::{web, HttpResponse};
-use dao::authservice::AuthService;
+use dao::auth_service::AuthService;
 use errors::AuthError;
 use log::trace;
 use model::credentials::Credentials;

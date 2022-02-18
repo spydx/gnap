@@ -6,6 +6,7 @@ use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
 
 use super::CachePath;
+
 pub type KeyProof = String;
 pub type KeyProofs = Vec<KeyProof>;
 pub type InteractionStartModes = Vec<String>;

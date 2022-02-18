@@ -3,7 +3,7 @@
 use actix_web::{web, HttpResponse};
 use dao::service::Service;
 // use log::{error, trace};
-use model::client::GnapClientRequest;
+use model::resource::GnapResourceServer;
 use model::introspect::{IntrospectRequest, InstrospectResponse};
 
 
@@ -23,9 +23,12 @@ pub async fn introspect(
 }
 
 /// HTTP POST  <as>/gnap/resource
-pub async fn resource(
+pub async fn register_resources_set(
     _service: web::Data<Service>,
-    _client: web::Json<GnapClientRequest>,
+    _client: web::Json<GnapResourceServer>,
 ) -> HttpResponse {
     HttpResponse::Ok().json("{OK resource}")
 }
+
+
+

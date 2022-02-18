@@ -23,7 +23,7 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             )
             .service(
         web::resource("/resource")
-                    .route(web::post().to(handlers::resources::resource)),
+                    .route(web::post().to(handlers::resources::register_resources_set)),
             )
             .service(
         web::resource("/auth")
