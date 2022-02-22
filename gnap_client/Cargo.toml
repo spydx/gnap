@@ -8,11 +8,11 @@ edition = "2018"
 [dependencies]
 actix-web = { version = "4.0.0-rc.3", features = ["openssl"] }
 reqwest = { version = "0.11.9", features = ["json"] }
-serde_json = "1.0.78"
+serde_json = "1.0.79"
 model = {path = "../model"}
 uuid = { version = "0.8.2", features = ["v4"] }
 log = "0.4.14"
 dotenv = "0.15.0"
 pretty_env_logger = "0.4.0"
-tokio = { version = "1.16.1", default-features = false, features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.17.0", default-features = false, features = ["macros", "rt-multi-thread"] }
 base64 = "0.13.0"

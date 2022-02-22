@@ -8,8 +8,8 @@ edition = "2018"
 [dependencies]
 mongodb = "2.1.0"
 redis = "0.21.5"
-serde_json = "1.0.78"
+serde_json = "1.0.79"
 serde = { version = "1.0.136", features = ["derive"] }
 thiserror = "1.0.30"
-argon2 = "0.3.3"
+argon2 = "0.3.4"
 

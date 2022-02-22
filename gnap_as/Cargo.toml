@@ -16,7 +16,7 @@ dotenv = "0.15.0"
 mongodb = "2.1.0"
 redis = { version = "0.21.5", features = ["tokio-comp", "connection-manager"] }
 pretty_env_logger = "0.4.0"
-serde_json = "1.0.78"
+serde_json = "1.0.79"
 serde = { version = "1.0.136", features = ["derive"] }
 thiserror = "1.0.30"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
@@ -29,4 +29,4 @@ model = {path = "../model"}
 dao = {path = "../dao"}
 get_if_addrs = "0.5.3"
 base64 = "0.13.0"
-argon2 = "0.3.3"
+argon2 = "0.3.4"
