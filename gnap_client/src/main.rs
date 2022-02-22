@@ -37,7 +37,6 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     dotenv().ok();
     pretty_env_logger::init();
     
-    
     // Get the GNAP well knowns from the server
     let options = get_config().await?;
 
