@@ -22,17 +22,17 @@ pub struct GnapRegisterResourceServer {
     pub resource_server_name: Option<String>, 
     pub resource_server_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub access: Option<Vec<AccessRequest>>,
+    pub resource_set: Option<Vec<AccessRequest>>,
 }
 
-#[derive(Serialize ,Deserialize)]
+#[derive(Serialize ,Deserialize, Debug)]
 pub struct GnapResourceServer {
     pub resource_server: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_server_name: Option<String>, 
     pub resource_server_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub access: Option<Vec<AccessRequest>>,
+    pub resource_set: Option<Vec<AccessRequest>>,
 }
 
 impl GnapResourceServer {
@@ -43,7 +43,7 @@ impl GnapResourceServer {
             resource_server: id,
             resource_server_name: register.resource_server_name,
             resource_server_key: register.resource_server_key,
-            access: register.access
+            resource_set: register.resource_set
         }
     }
 }

@@ -68,7 +68,7 @@ impl ResourceService {
 
         debug!("We be here");
         // 2. Get token
-        let token = match self.token_service.db_client.fetch_token_by_id(ir.access_token.clone()).await {
+        let token = match self.token_service.fetch_token_by_accesstoken(ir.access_token.clone()).await {
             Ok(t) => Some(t),
             Err(_) => None,
         };
@@ -93,28 +93,22 @@ impl ResourceService {
             ac.unwrap().request.unwrap()
         };
         
-
-
-
-        // bug: IR does not contain any access, and hence fail.
-        // need to look up token and tx before validating.
-
-
-        match validate_access_request(access_request, resource_server) {
+        match validate_access_request(&access_request, resource_server) {
             Ok(_) => {
-                let access = ir.access.clone();
                 let key = Some(String::from("httpsig"));
 
-                let token_active = match self.token_service.validate_token(ir.access_token).await {
+                let token_active = match self.token_service.validate_token(token.id).await {
                     Ok(_) => true, 
                     Err(_) => false,
                 };
+                let atr = access_request.access_token.first().to_owned();
 
                 let response = InstrospectResponse {
                     active: token_active,
-                    access: access,
+                    access: Some(atr.unwrap().access.to_owned()),
                     key:key 
                 };
+                println!("{:#?}", response);
                 Ok(response)
             },
             Err(err) => Err(err)
@@ -123,10 +117,10 @@ impl ResourceService {
 }
 
 
-fn validate_access_request(grant_request: GrantRequest , rs: GnapResourceServer) -> Result<(), ResourceError> {
+fn validate_access_request(grant_request: &GrantRequest , rs: GnapResourceServer) -> Result<(), ResourceError> {
     debug!("req: {:#?}", grant_request);
-
-    for wanted_access in rs.access {
+    debug!("rs:  {:#?}", rs);
+    for wanted_access in rs.resource_set {
         for access in wanted_access {
             for access_request in grant_request.access_token.clone() {
                 for user_access in access_request.access {
@@ -134,6 +128,7 @@ fn validate_access_request(grant_request: GrantRequest , rs: GnapResourceServer)
                     debug!("Access: {:#?}", access);
                     debug!("Validated: {:#?}", res);
                     if res {
+                        debug!("Did this");
                         return Ok(())
                     }
                 }

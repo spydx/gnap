@@ -2,6 +2,7 @@ use super::cache::GnapCache;
 use super::token::TokenDb;
 use errors::TokenError;
 use model::tokens::Token;
+use log::debug;
 
 #[derive(Clone)]
 pub struct TokenService {
@@ -47,9 +48,9 @@ impl TokenService {
         }
     }
     pub async fn validate_token(&self, token_id: String) -> Result<(), TokenError> {
-        
         match self.db_client.fetch_token_by_id(token_id).await {
             Ok(t) =>{
+                debug!("Are we here");
                 if t.expire.is_some() {
                     // this is not enterily correct, but will do for out poc
                     Ok(())
