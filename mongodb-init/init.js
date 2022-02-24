@@ -157,7 +157,7 @@ const accounts = [
         nickname: 'spydx',
         phone: [
             {
-                phone_number: '+47 0000 0000',
+                phone_number: '+47 0000 0000', 
                 verified: false,
                 primary: true,
             },
@@ -168,10 +168,6 @@ const accounts = [
         website: 'https://kefo.no',
         zoneinfo: 'Europe/Berlin',
     },
-]
-
-const resources = [
-
 ]
 
 const tokens = [
