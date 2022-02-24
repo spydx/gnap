@@ -54,26 +54,26 @@ const users = [
         "username": "kenneth",
         "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
         "access": [
-          {
-            "type": "waterbowl-access",
-            "actions": [
-              "read",
-              "create"
-            ],
-            "locations": [
-              "https://localhost:8080/bowls/"
-            ]
-          },
-          {
-            "type": "waterlevel-access",
-            "actions": [
-              "read",
-              "create"
-            ],
-            "locations": [
-              "https://localhost:8080/bowls/waterlevels/"
-            ]
-          }
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/"
+                ]
+            },
+            {
+                "type": "waterlevel-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/waterlevels/"
+                ]
+            }
         ]
     }
 ]
@@ -82,7 +82,29 @@ const resources = [
     {
         "resource_server": "e8a2968a-f183-45a3-b63d-4bbbd1dad276",
         "resource_server_name": "simple-api",
-        "resource_server_key": "httsig"
+        "resource_server_key": "httsig",
+        "resource_set": [
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/"
+                ]
+            },
+            {
+                "type": "waterlevel-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/waterlevels/"
+                ]
+            }
+        ]
     }
 ]
 
@@ -157,7 +179,7 @@ const accounts = [
         nickname: 'spydx',
         phone: [
             {
-                phone_number: '+47 0000 0000', 
+                phone_number: '+47 0000 0000',
                 verified: false,
                 primary: true,
             },
