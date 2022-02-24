@@ -15,11 +15,11 @@ pub struct IntrospectRequest {
     pub access: Option<AccessRequest>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct InstrospectResponse {
     pub active: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub access: Option<AccessRequest>,
+    pub access: Option<Vec<AccessRequest>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub key: Option<String>,
 }

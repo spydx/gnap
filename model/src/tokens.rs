@@ -22,7 +22,7 @@ impl Token {
             access_token: Some(access_token),
             tx: Some(tx),
             label: None,
-            expire: None
+            expire: Some(0)
         }
     }
     pub fn from_string(s: String) -> Self {
