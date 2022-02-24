@@ -125,21 +125,37 @@ impl TokenDb {
             .await
             .map_err(TokenError::DatabaseError);
 
-        let res_token = match cursor_result {
-            Ok(stored_token) => {
-                if stored_token.is_some() {
-                    stored_token
+        match cursor_result {
+            Ok(token) => {
+                if token.is_none() {
+                    Err(TokenError::NotFound)
                 } else {
-                    None
+                    Ok(token.unwrap())
                 }
             },
-            Err(_) => None
-        };
+            Err(_) => Err(TokenError::NotFound)
+        }
+    }
 
-        if res_token.is_none() {
-            Err(TokenError::NotFound)
-        } else {
-            Ok(res_token.unwrap())
+    pub async fn fetch_token_by_ac(&self, access_token: String) -> Result<Token, TokenError> {
+        let filter = doc! { "access_token": access_token};
+
+        let cursor_result = self
+            .database
+            .collection::<Token>(COLLECTION)
+            .find_one(filter,None)
+            .await
+            .map_err(TokenError::DatabaseError);
+
+        match cursor_result {
+            Ok(token) => {
+                if token.is_some() {
+                    Ok(token.unwrap())
+                } else {
+                    Err(TokenError::NotFound)
+                }
+            }
+            Err(_) => Err(TokenError::NotFound)
         }
     }
 }

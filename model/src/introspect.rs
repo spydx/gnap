@@ -5,7 +5,7 @@ use void::Void;
 
 use crate::grant::AccessRequest;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct IntrospectRequest {
     pub access_token: String,
     #[serde(skip_serializing_if = "Option::is_none")]

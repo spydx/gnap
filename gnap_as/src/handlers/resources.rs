@@ -10,10 +10,10 @@ use mongodb::bson::doc;
 /// HTTP POST  <as>/gnap/introspect
 pub async fn introspect(
     service: web::Data<ResourceService>,
-    introrequest: web::Json<IntrospectRequest>,
+    intro_request: web::Json<IntrospectRequest>,
 ) -> HttpResponse {
-    let ir = introrequest.into_inner();
-
+    let ir = intro_request.into_inner();
+    println!("{:#?}", ir);
     match service.introspect_token(ir).await {
         Ok(data) => HttpResponse::Ok().json(data),
         Err(_) => {

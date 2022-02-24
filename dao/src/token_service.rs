@@ -14,7 +14,7 @@ impl TokenService {
         let db_client = TokenDb::new().await;
         let cache_client = GnapCache::new().await;
 
-        let _ = db_client.prune_db().await.expect("Failed to prune");
+        //let _ = db_client.prune_db().await.expect("Failed to prune");
         
         TokenService {
             db_client,
@@ -60,6 +60,13 @@ impl TokenService {
             Err(_) => {
                 Err(TokenError::InvalidToken)
             }
+        }
+    }
+
+    pub async fn fetch_token_by_accesstoken(&self, access_token: String) -> Result<Token, TokenError> {
+        match self.db_client.fetch_token_by_ac(access_token).await {
+            Ok(t) => Ok(t),
+            Err(e) => Err(e)
         }
     }
 }

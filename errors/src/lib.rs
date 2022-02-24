@@ -39,6 +39,8 @@ pub enum AuthError {
 
 #[derive(Error, Debug)]
 pub enum ResourceError {
+    #[error("Unable to verify token")]
+    TokenError,
     #[error("Unable to determin if RS has access")]
     AccessNotFound,
     #[error("Can't find RS in with identifier")]
