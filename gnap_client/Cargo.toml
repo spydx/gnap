@@ -6,7 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-web = { version = "4.0.0-rc.3", features = ["openssl"] }
+actix-web = { version = "4.0.1", features = ["openssl"] }
 reqwest = { version = "0.11.9", features = ["json"] }
 serde_json = "1.0.79"
 model = {path = "../model"}

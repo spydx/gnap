@@ -48,12 +48,13 @@ pub async fn continue_request(
     tx_id: web::Path<String>,
 ) -> HttpResponse {
     let hash = request.into_inner();
-    if hash.interact_ref.eq(&tx_id.clone().into_inner()) {
+    let tx_id = tx_id.into_inner();
+    if hash.interact_ref.eq(&tx_id.clone()) {
         debug!("Valid hash");
         // This hash should be validate after being computed at the client
     }
 
-    let result = process_continue_request(&service, tx_id.into_inner()).await;
+    let result = process_continue_request(&service, tx_id).await;
     match result {
         Ok(data) => {
             trace!("processed grant request: {:?}", data);

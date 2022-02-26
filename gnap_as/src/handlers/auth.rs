@@ -1,7 +1,7 @@
 //! Transaction API Handlers
 
 use actix_web::http::header::HeaderMap;
-use actix_web::{web, HttpResponse};
+use actix_web::{HttpRequest, HttpResponse, web};
 use dao::auth_service::AuthService;
 use errors::AuthError;
 use log::trace;
@@ -12,7 +12,7 @@ use model::instances::{InstanceRequest, InstanceResponse};
 // GET <as>/gnap/auth
 pub async fn auth(
     service: web::Data<AuthService>,
-    request: web::HttpRequest,
+    request: HttpRequest,
     instance: web::Json<InstanceRequest>,
 ) -> HttpResponse {
     trace!("Auth");
@@ -39,7 +39,7 @@ pub async fn auth(
 
 // TODO:
 // POST <as>/gnap/auth
-pub async fn create(service: web::Data<AuthService>, request: web::HttpRequest) -> HttpResponse {
+pub async fn create(service: web::Data<AuthService>, request: HttpRequest) -> HttpResponse {
     trace!("User create");
     let account = basic_authentication(request.headers());
 
