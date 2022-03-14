@@ -98,7 +98,8 @@ const resources = [
                 "type": "waterlevel-access",
                 "actions": [
                     "read",
-                    "create"
+                    "create",
+                    "delete"
                 ],
                 "locations": [
                     "https://localhost:8080/bowls/waterlevels/"
