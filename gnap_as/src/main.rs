@@ -43,6 +43,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(token_state.clone())
             .app_data(rs_state.clone())
             // Add each of the router modules.
+            .configure(routes::login::routes)
             .configure(routes::db::routes)
             .configure(routes::well_known::routes)
             .configure(routes::transaction::routes)

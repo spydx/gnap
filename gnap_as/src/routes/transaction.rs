@@ -1,6 +1,5 @@
 use crate::handlers;
 use actix_web::{http, web};
-
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/gnap")
@@ -35,8 +34,9 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::resource("/auth")
-                    .route(web::post().to(handlers::auth::auth))
+                    .route(web::get().to(handlers::auth::auth))
                     .route(web::put().to(handlers::auth::create)),
+                  
             )
             .service(
                 web::scope("/token").service(

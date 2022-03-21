@@ -16,6 +16,7 @@ pub async fn auth(
     instance: web::Json<InstanceRequest>,
 ) -> HttpResponse {
     trace!("Auth");
+    println!("Im here");
     let login = basic_authentication(request.headers());
     match login {
         Ok(credentials) => {

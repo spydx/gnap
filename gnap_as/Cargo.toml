@@ -30,3 +30,4 @@ dao = {path = "../dao"}
 get_if_addrs = "0.5.3"
 base64 = "0.13.0"
 argon2 = "0.3.4"
+actix-web-lab = "0.15.0"
