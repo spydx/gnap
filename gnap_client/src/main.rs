@@ -73,10 +73,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
 
     let secret = base64::encode(format!("{}:{}", username, password));
  
-    let instance = InstanceRequest::create(gnap_session.instance_id.clone().unwrap());
+    let instance = gnap_session.instance_id.clone().unwrap();
     
     let step4: InstanceResponse = reqwest::Client::new()
-        .post(format!("http://{}",&gnap_session.redirect.unwrap()))
+        .get(format!("http://{}/{}",&gnap_session.redirect.unwrap(), instance))
         .header("Content-type", "application/x-www-form-urlencoded")
         .header("Authorization", "Basic ".to_owned() + &secret)
         .json(&instance)
@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     println!("Response: {:#?}", step4);
-    
+    /* 
     let continue_request = ContinuationRequest::create_with_ref(gnap_session.instance_id.clone().unwrap());
     let target = gnap_session.tx_contiune.unwrap().to_string();
     println!("{}", target);
@@ -99,7 +99,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     println!("Response: {:#?}", step8);
-
+*/
     Ok(())
 }
 

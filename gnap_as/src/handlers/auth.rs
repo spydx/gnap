@@ -9,19 +9,20 @@ use model::credentials::Credentials;
 use model::instances::{InstanceRequest, InstanceResponse};
 
 // TODO:
-// GET <as>/gnap/auth
+// GET <as>/gnap/auth/:instance:
 pub async fn auth(
     service: web::Data<AuthService>,
     request: HttpRequest,
-    instance: web::Json<InstanceRequest>,
+    instance: web::Path<String>,
 ) -> HttpResponse {
     trace!("Auth");
     println!("Im here");
     let login = basic_authentication(request.headers());
     match login {
         Ok(credentials) => {
+            let instance = InstanceRequest::create(instance.into_inner());
             match service
-                .validate_account(credentials, instance.into_inner())
+                .validate_account(credentials, instance)
                 .await
             {
                 Ok(b) => {
