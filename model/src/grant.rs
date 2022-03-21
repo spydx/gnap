@@ -93,6 +93,12 @@ impl AccessTokenRequest {
     }
 }
 
+impl Default for AccessTokenRequest {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum SubjectFormatType {
@@ -179,17 +185,17 @@ impl GnapID for GrantRequest {
         if let Some(client_instance) = &self.client {
             if let super::grant::GnapClientInstance::Ref(id) = client_instance {
                 trace!("Request client is a reference");
-                if let Ok(rid) = Uuid::parse_str(&id) {
-                    return Ok(rid);
+                if let Ok(rid) = Uuid::parse_str(id) {
+                    Ok(rid)
                 } else {
-                    return Err(GnapError::BadData);
+                    Err(GnapError::BadData)
                 }
             } else {
                 trace!("Request client is a value");
-                return Err(GnapError::BadData);
+                Err(GnapError::BadData)
             }
         } else {
-            return Err(GnapError::BadData);
+            Err(GnapError::BadData)
         }
     }
 }
@@ -335,6 +341,12 @@ impl GrantResponse {
             interact: None,
             access: None,
         }
+    }
+}
+
+impl Default for GrantResponse {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

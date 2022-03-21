@@ -120,7 +120,7 @@ impl Service {
         let cache_key = format!(
             "{}:{}",
             GnapClient::cache_path(),
-            client.client_id.to_string()
+            client.client_id
         )
         .to_owned();
         let _: () = redis::pipe()
@@ -136,14 +136,14 @@ impl Service {
     pub async fn get_client(&self, id: &Uuid) -> Result<Option<GnapClient>, GnapError> {
         trace!("Service - get_client");
 
-        let cache_key = format!("{}:{}", GnapClient::cache_path(), id.to_string());
+        let cache_key = format!("{}:{}", GnapClient::cache_path(), id);
         let mut con = self.cache_client.client.get_async_connection().await?;
         let cache_response = con.get(&cache_key).await?;
 
         match cache_response {
             Value::Nil => {
                 trace!("Use database to retrieve GnapClient");
-                let result = self.db_client.fetch_client_by_id(&id).await?;
+                let result = self.db_client.fetch_client_by_id(id).await?;
                 if result.is_some() {
                     let data = result.unwrap();
                     let _: () = redis::pipe()
@@ -171,14 +171,14 @@ impl Service {
     pub async fn get_account(&self, id: &Uuid) -> Result<Option<Account>, GnapError> {
         trace!("Service - get_account");
 
-        let cache_key = format!("{}:{}", Account::cache_path(), id.to_string());
+        let cache_key = format!("{}:{}", Account::cache_path(), id);
         let mut con = self.cache_client.client.get_async_connection().await?;
         let cache_response = con.get(&cache_key).await?;
 
         match cache_response {
             Value::Nil => {
                 trace!("Use database to retrieve Account");
-                let result = self.db_client.fetch_account_by_id(&id).await?;
+                let result = self.db_client.fetch_account_by_id(id).await?;
                 if result.is_some() {
                     let data = result.unwrap();
                     let _: () = redis::pipe()

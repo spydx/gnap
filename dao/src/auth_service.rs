@@ -24,7 +24,7 @@ impl AuthService {
         let gnap = GnapDB::new().await;
 
         Self {
-            cache_client: cache_client,
+            cache_client,
             db_client: db,
             db_gnap: gnap
         }
@@ -58,7 +58,7 @@ impl AuthService {
         let password_hash = compute_hash(credentials.password).expect("Failed to hash password");
         let id = User::create_id().to_string();
         let user = User {
-            id: id,
+            id,
             username: credentials.username,
             password: password_hash,
             access: None,

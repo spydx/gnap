@@ -32,3 +32,9 @@ impl GnapSession {
         }
     }
 }
+
+impl Default for GnapSession {
+    fn default() -> Self {
+        Self::new()
+    }
+}

@@ -63,9 +63,8 @@ pub async fn create(service: web::Data<AuthService>, request: HttpRequest) -> Ht
 fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, AuthError> {
     let header_values = headers.get("Authorization");
 
-    if header_values.is_some() {
+    if let Some(header_values) = header_values {
         let base64encoded = header_values
-            .unwrap()
             .to_str()
             .expect("Failed to get headervalue")
             .strip_prefix("Basic ")
@@ -78,15 +77,15 @@ fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, AuthError> {
         let mut cred = credentials.splitn(2, ':');
         let username = cred
             .next()
-            .ok_or_else(|| AuthError::UserNameError)?
+            .ok_or(AuthError::UserNameError)?
             .to_string();
         let password = cred
             .next()
-            .ok_or_else(|| AuthError::PasswordError)?
+            .ok_or(AuthError::PasswordError)?
             .to_string();
         Ok(Credentials {
-            username: username,
-            password: password,
+            username,
+            password,
         })
     } else {
         Err(AuthError::BasicFailed)

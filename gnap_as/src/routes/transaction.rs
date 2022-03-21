@@ -35,8 +35,8 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::resource("/auth")
-                    .route(web::get().to(handlers::auth::auth))
-                    .route(web::post().to(handlers::auth::create)),
+                    .route(web::post().to(handlers::auth::auth))
+                    .route(web::put().to(handlers::auth::create)),
             )
             .service(
                 web::scope("/token").service(

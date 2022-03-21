@@ -3,7 +3,6 @@ use gnap_client::make_request;
 use log::trace;
 use model::gnap::GnapOptions;
 use model::grant::*;
-use pretty_env_logger;
 use std::error::Error as StdError;
 use gnap_client::gnap_session::GnapSession;
 use std::io;
@@ -77,7 +76,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let instance = InstanceRequest::create(gnap_session.instance_id.clone().unwrap());
     
     let step4: InstanceResponse = reqwest::Client::new()
-        .get(format!("http://{}",&gnap_session.redirect.unwrap()))
+        .post(format!("http://{}",&gnap_session.redirect.unwrap()))
         .header("Content-type", "application/x-www-form-urlencoded")
         .header("Authorization", "Basic ".to_owned() + &secret)
         .json(&instance)
@@ -89,7 +88,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     println!("Response: {:#?}", step4);
     
     let continue_request = ContinuationRequest::create_with_ref(gnap_session.instance_id.clone().unwrap());
-    let target = format!("{}", gnap_session.tx_contiune.unwrap());
+    let target = gnap_session.tx_contiune.unwrap().to_string();
     println!("{}", target);
     let step8: GrantResponse = reqwest::Client::new()
         .post(target)
@@ -115,7 +114,7 @@ fn get_user_input() -> Result<(String, String), Box<dyn StdError>> {
     println!("Password: ");
     io::stdin().read_line(&mut password)?;
 
-    Ok((username.trim_end().clone().to_string(), password.trim_end().clone().to_string()))
+    Ok((username.trim_end().to_string(), password.trim_end().to_string()))
 }
 /*
 

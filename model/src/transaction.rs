@@ -97,6 +97,12 @@ impl TransactionOptions {
     }
 }
 
+impl Default for TransactionOptions {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CachePath for TransactionOptions {
     fn cache_path() -> &'static str {
         "gnap:tx_options"
@@ -152,13 +158,13 @@ impl GnapTransaction {
         Self {
             tx_id: Self::create_id(),
             state: GnapTransactionState::Waiting,
-            request: request,
+            request,
         }
     }
     
     pub fn update_state(self, state: GnapTransactionState) -> Self {
         Self {
-            state: state,
+            state,
             ..self
         }
     }

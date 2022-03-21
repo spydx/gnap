@@ -50,7 +50,7 @@ impl GnapDB {
         let db = client.database(&database);
         
         Self {
-            client: client,
+            client,
             database: db,
         }
     }
@@ -308,21 +308,18 @@ impl GnapDB {
     
         let tx = match cursor_result {
             Ok(trans) => {
-
-                let tx_update = if trans.is_some() {
-                    match validate_user_access(user.clone(), trans.clone().unwrap()) {
+                if let Some(trans) = trans {
+                    match validate_user_access(user.clone(), trans.clone()) {
                         Ok(_) => {},
                         Err(err) => return Err(err)
                     }
                     let update = trans
-                        .unwrap()
-                        .update_state(GnapTransactionState::Authorized)
-                        .update_grantrequest(user.id);
+                    .update_state(GnapTransactionState::Authorized)
+                    .update_grantrequest(user.id);
                     Some(update)
                 } else {
                     None
-                };
-                tx_update
+                }
           }, 
             Err(_) => None,
         };

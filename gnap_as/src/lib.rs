@@ -17,29 +17,24 @@ pub async fn app_state() -> web::Data<Service> {
     let dao_service = Service::create().await;
 
     // App::app_data will wrap the app state in an Arc, so it is sharable
-    let app_state = web::Data::new(dao_service);
-
-    app_state
+    web::Data::new(dao_service)
 }
 
 pub async fn auth_state() -> web::Data<AuthService> {
     let authservice = AuthService::create().await;
-    let auth_state = web::Data::new(authservice);
-
-    auth_state
+    web::Data::new(authservice)
 }
 
 pub async fn token_state() -> web::Data<TokenService> {
     let tokenservice = TokenService::create().await;
-    let token_state = web::Data::new(tokenservice);
-
-    token_state
+    web::Data::new(tokenservice)
+    
 }
 
 pub async fn rs_state() -> web::Data<ResourceService> {
     let rs_service = ResourceService::create().await;
-    let rs_state = web::Data::new(rs_service);
-    rs_state
+    web::Data::new(rs_service)
+    
 }
 
 /// Get addresses from ENV

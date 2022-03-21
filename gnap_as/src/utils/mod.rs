@@ -1,5 +1,3 @@
-use get_if_addrs;
-
 /// Get the machine IP Address
 /// Get the IP from a non-loopback interface and return as a string.
 pub fn get_machine_ip() -> String {

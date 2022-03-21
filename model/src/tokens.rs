@@ -18,7 +18,7 @@ impl Token {
         let id = Uuid::new_v4().to_string();
         let access_token = generate_token();
         Self {
-            id: id,
+            id,
             access_token: Some(access_token),
             tx: Some(tx),
             label: None,

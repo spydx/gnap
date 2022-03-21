@@ -25,7 +25,7 @@ impl TokenService {
 
     
     pub async fn revoke_token(&self, token: &Token) -> Result<bool, TokenError> {
-        match self.db_client.remove_token(&token).await {
+        match self.db_client.remove_token(token).await {
             Ok(_) => Ok(true),
             Err(_) => Err(TokenError::NotFound),
         }
@@ -65,9 +65,6 @@ impl TokenService {
     }
 
     pub async fn fetch_token_by_accesstoken(&self, access_token: String) -> Result<Token, TokenError> {
-        match self.db_client.fetch_token_by_ac(access_token).await {
-            Ok(t) => Ok(t),
-            Err(e) => Err(e)
-        }
+        self.db_client.fetch_token_by_ac(access_token).await
     }
 }

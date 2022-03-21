@@ -29,7 +29,7 @@ impl ResourceDB {
 
         let db = client.database(&database);
         Self {
-            client: client,
+            client,
             database: db,
         }
     }

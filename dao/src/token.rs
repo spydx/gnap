@@ -26,7 +26,7 @@ impl TokenDb {
 
         let db = client.database(&database);
         Self {
-            client: client,
+            client,
             database: db,
         }
     }
@@ -84,10 +84,7 @@ impl TokenDb {
             .await
             .map_err(TokenError::DatabaseError);
 
-        match cursor_result {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        cursor_result.is_ok()
     }
 
     pub async fn fetch_token(&self, token: &Token) -> Result<Token, TokenError> {

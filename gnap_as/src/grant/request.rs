@@ -32,7 +32,7 @@ pub async fn process_request(
     let tx = service.start_transaction(request.clone()).await?;
 
     let uri = format!("http://localhost:8000/gnap/tx/{}", &tx.tx_id);
-    let rc = RequestContinuation::as_uri(&uri.clone());
+    let rc = RequestContinuation::as_uri(&uri);
     let mut interact_response = InteractResponse {
         tx_continue: rc,
         redirect: None,
@@ -55,7 +55,7 @@ pub async fn process_request(
     }
 
     let response = GrantResponse {
-        instance_id: tx.tx_id.clone(),
+        instance_id: tx.tx_id,
         interact: Some(interact_response),
         access: None,
     };

@@ -97,16 +97,13 @@ impl ResourceService {
             Ok(_) => {
                 let key = Some(String::from("httpsig"));
 
-                let token_active = match self.token_service.validate_token(token.id).await {
-                    Ok(_) => true, 
-                    Err(_) => false,
-                };
+                let token_active = self.token_service.validate_token(token.id).await.is_ok();
                 let atr = access_request.access_token.first().to_owned();
 
                 let response = InstrospectResponse {
                     active: token_active,
                     access: Some(atr.unwrap().access.to_owned()),
-                    key:key 
+                    key 
                 };
                 println!("{:#?}", response);
                 Ok(response)

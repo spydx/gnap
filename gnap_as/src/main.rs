@@ -2,7 +2,6 @@ use actix_web::{middleware, App, HttpServer};
 use dotenv::dotenv;
 
 use log::info;
-use pretty_env_logger;
 
 #[allow(unused_imports)]
 use gnap_as::{app_state, auth_state, get_ip_addresses, rs_state, tls_builder, token_state};

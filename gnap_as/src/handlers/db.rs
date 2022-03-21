@@ -15,7 +15,7 @@ pub async fn get_client(service: web::Data<Service>, id: web::Path<Uuid>) -> Htt
         }
         Ok(None) => {
             trace!("client not found");
-            HttpResponse::NotFound().body(format!("No client found with id {}", id.to_string()))
+            HttpResponse::NotFound().body(format!("No client found with id {}", id))
         }
         Err(err) => {
             error!("{:?}", err);
