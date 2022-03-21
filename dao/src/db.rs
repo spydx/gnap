@@ -350,6 +350,7 @@ impl GnapDB {
 fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError> {
     let grant = tx.request.unwrap();
     let user_access = user.access.unwrap();
+    debug!("UserAccess {:#?}", user_access);
     debug!("Lets VALIDATE");
     for wanted_access_tokens in grant.access_token.into_iter() {
         for wanted_access in wanted_access_tokens.access.into_iter() {

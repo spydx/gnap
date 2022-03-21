@@ -6,7 +6,7 @@ use model::grant::*;
 use std::error::Error as StdError;
 use gnap_client::gnap_session::GnapSession;
 use std::io;
-use model::instances::{InstanceRequest, InstanceResponse};
+use model::instances::InstanceResponse;
 
 const GNAP_AS_HOST: &str = "http://localhost:8000";
 

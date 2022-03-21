@@ -4,3 +4,4 @@
 /.keystore
 .DS_Store
 Cargo.lock
+.idea/

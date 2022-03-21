@@ -36,6 +36,7 @@ impl AuthService {
         if user.is_some() {
             match validate_password(user.clone().unwrap().password, credentials.password) {
                 Ok(_) => {
+                    println!("Password valid");
                     match self.db_gnap.authenticate_tx(instance.instance_id, user.unwrap()).await {
                         Ok(_) => Ok(true),
                         Err(_) => Err(AuthError::DatabaseNotFound)
