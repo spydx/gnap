@@ -395,32 +395,6 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
         }
     }
 
-
-    /* 
-    for wanted_access_tokens in grant.access_token.into_iter() {
-        for wanted_access in wanted_access_tokens.access.into_iter() {
-            /*let b = user_access.contains(&wanted_access);
-
-            debug!("Access: {:#?}", wanted_access);
-            debug!("Validated: {:#?}", b);
-            if *b {
-                return Ok(())
-            }*/
-
-            for ua in user_access.into_iter() {
-                match &ua {
-                    AccessRequest::Value { resource_type , actions, locations: _, data_types: _} => {
-                        
-                    }
-                    _ => {},
-                }
-            }
-            
-        } 
-         
-    }
-    */
-
     Err(GnapError::AccessMismatch)
 }
 
