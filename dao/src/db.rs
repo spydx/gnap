@@ -4,6 +4,7 @@ use core::result::Result;
 use errors::GnapError;
 use futures::stream::TryStreamExt;
 use log::{debug, trace};
+use model::grant::AccessRequest;
 use model::transaction::{TransactionOptions, GnapTransaction, GnapTransactionState};
 use model::{
     users::User,
@@ -350,19 +351,75 @@ impl GnapDB {
 fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError> {
     let grant = tx.request.unwrap();
     let user_access = user.access.unwrap();
-    debug!("UserAccess {:#?}", user_access);
+    debug!("UserAccess {:#?}", &user_access);
     debug!("Lets VALIDATE");
-    for wanted_access_tokens in grant.access_token.into_iter() {
-        for wanted_access in wanted_access_tokens.access.into_iter() {
-            let b = user_access.contains(&wanted_access);
-            debug!("Access: {:#?}", wanted_access);
-            debug!("Validated: {:#?}", b);
-            if b {
-                return Ok(())
-            }
-    
+
+    /*let res = grant.access_token.unwrap().access
+        .into_iter()
+        .zip(user_access.into_iter()).filter(|&(grant, access)| grant == access).count();
+    */
+    for request in grant.access_token.clone().into_iter() {
+        let c = request.access.into_iter()
+            .zip(user_access.clone().into_iter()).filter(|(g, a)| g == a).count();
+        if c > 0 {
+            return Ok(())
         }
     }
+
+    for request in grant.access_token.clone().into_iter() {
+        let access = request.access.clone();
+        for ac in access.into_iter() {
+            
+            let (ac_rs, ac_actions) = match ac {
+                AccessRequest::Value { resource_type, actions, locations: _, data_types: _ } => {
+                    (resource_type, actions.unwrap())
+                },
+                _ => return Err(GnapError::AccessMismatch)
+            };
+
+            for us in user_access.clone().into_iter() {
+                let (us_rs, us_actions) = match us {
+                    AccessRequest::Value { resource_type, actions, locations: _, data_types: _ } => {
+                        (resource_type, actions.unwrap())
+                    },
+                    _ => return Err(GnapError::AccessMismatch)
+                };
+                if us_rs.eq(&ac_rs) {
+                    let c = us_actions.into_iter()
+                        .zip(ac_actions.clone().into_iter()).filter(|(u, a)| u == a ).count();
+                    if c > 0 {
+                        return Ok(())
+                    }
+                }
+            }
+        }
+    }
+
+
+    /* 
+    for wanted_access_tokens in grant.access_token.into_iter() {
+        for wanted_access in wanted_access_tokens.access.into_iter() {
+            /*let b = user_access.contains(&wanted_access);
+
+            debug!("Access: {:#?}", wanted_access);
+            debug!("Validated: {:#?}", b);
+            if *b {
+                return Ok(())
+            }*/
+
+            for ua in user_access.into_iter() {
+                match &ua {
+                    AccessRequest::Value { resource_type , actions, locations: _, data_types: _} => {
+                        
+                    }
+                    _ => {},
+                }
+            }
+            
+        } 
+         
+    }
+    */
 
     Err(GnapError::AccessMismatch)
 }
@@ -370,11 +427,6 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 
     const TX_DATA: &str = r#"{
         "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
@@ -429,7 +481,7 @@ mod tests {
                             "create"
                         ],
                         "locations": [
-                            "https://localhost:8080/bowls/"
+                            "http://localhost:8080/bowls/"
                         ]
                     },
                     {
@@ -439,7 +491,7 @@ mod tests {
                             "create"
                         ],
                         "locations": [
-                            "https://localhost:8080/bowls/waterlevels/"
+                            "http://localhost:8080/bowls/waterlevels/"
                         ]
                     }
                 ]
@@ -474,7 +526,7 @@ mod tests {
                     "create"
                 ],
                 "locations": [
-                    "https://localhost:8080/bowls/"
+                    "http://localhost:8080/bowls/"
                 ]
             },
             {
@@ -484,12 +536,63 @@ mod tests {
                     "create"
                 ],
                 "locations": [
-                    "https://localhost:8080/bowls/waterlevels/"
+                    "http://localhost:8080/bowls/waterlevels/"
                 ]
             }
         ]
     }"#;
 
+
+    const USER_READ_DATA: &str = r#"{
+        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "username": "kenneth",
+        "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
+        "access": [
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "read"
+                ],
+                "locations": [
+                    "http://localhost:8080/bowls/"
+                ]
+            }
+        ]
+    }"#;
+    const USER_DELETE_DATA: &str = r#"{
+        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "username": "kenneth",
+        "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
+        "access": [
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "delete"
+                ],
+                "locations": [
+                    "http://localhost:8080/bowls/"
+                ]
+            }
+        ]
+    }"#;
+
+    const USER_ADMIN_DATA: &str = r#"{
+        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "username": "kenneth",
+        "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
+        "access": [
+            {
+                "type": "sysadmmin",
+                "actions": [
+                    "delete",
+                    "readall"
+                ],
+                "locations": [
+                    "http://localhost:8080/bowls/"
+                ]
+            }
+        ]
+    }"#;
     #[test]
     fn parse_user() {
         let _: User = serde_json::from_str(USER_DATA).unwrap();
@@ -529,4 +632,29 @@ mod tests {
             Err(_) => assert!(false)
         }
     }
+
+    #[test]
+    fn test_validate_user_read_access_ok() {
+        let user = serde_json::from_str(USER_READ_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA_OK).unwrap();
+
+        assert!(validate_user_access(user, tx).is_ok())
+    }
+
+    #[test]
+    fn test_validate_user_delete_access_fail() {
+        let user = serde_json::from_str(USER_DELETE_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA_OK).unwrap();
+
+        assert_eq!(validate_user_access(user, tx).is_ok(), false)
+    }
+
+    #[test]
+    fn test_validate_sysadmin_fail() {
+        let user = serde_json::from_str(USER_ADMIN_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA_OK).unwrap();
+
+        assert_eq!(validate_user_access(user, tx).is_ok(), false)
+    }
 }
+
