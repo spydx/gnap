@@ -3,6 +3,7 @@ use crate::{
 };
 use errors::ResourceError;
 use log::{debug, trace};
+use model::grant::AccessRequest;
 use model::introspect::IntrospectRequest;
 use model::{
     grant::GrantRequest,
@@ -130,7 +131,35 @@ fn validate_access_request(
 ) -> Result<(), ResourceError> {
     debug!("req: {:#?}", grant_request);
     debug!("rs:  {:#?}", rs);
+
     for wanted_access in rs.resource_set {
+        for wanted in wanted_access.into_iter() {
+            let (w_rs, w_actions) = match wanted {
+                model::grant::AccessRequest::Value { resource_type, actions, locations:_, data_types: _ } => (resource_type, actions.unwrap()),
+                _ => return Err(ResourceError::AccessNotFound)
+            };
+
+            for granted_access_tokens in grant_request.clone().access_token {
+                for gc in granted_access_tokens.clone().access {
+                    let (granted_ac, granted_actions ) = match gc {
+                        AccessRequest::Value { resource_type, actions, locations: _, data_types: _} => (resource_type, actions.unwrap()),
+                        _ => return Err(ResourceError::AccessNotFound)
+                    };
+
+                    if w_rs.eq(&granted_ac) {
+                        for a in w_actions.clone() {
+                            if granted_actions.contains(&a) {
+                                return Ok(())
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    /*for wanted_access in rs.resource_set {
         for access in wanted_access {
             for access_request in grant_request.access_token.clone() {
                 for user_access in access_request.access {
@@ -145,14 +174,137 @@ fn validate_access_request(
             }
         }
     }
+    */
     Err(ResourceError::AccessNotFound)
 }
 
+
 #[cfg(test)]
 mod test {
-    #[test]
-    fn validate_access_request_ok() {}
+    use model::grant::GrantRequest;
+    use super::*;
+
+    const GRANT_REQUEST: &str = r#"
+        {
+            "access_token": [
+              {
+                "access": [
+                  {
+                    "type": "waterbowl-access",
+                    "actions": [
+                      "create"
+                    ],
+                    "locations": [
+                      "http://localhost:8080/bowls/"
+                    ]
+                  }
+                ],
+                "label": "bowls",
+                "flags": [
+                  "bearer"
+                ]
+              }
+            ],
+            "subject": null,
+            "client": "7e057b0c-17e8-4ab4-9260-2b33f32b2cce",
+            "user": "6785732c-682a-458b-8465-2986a77abf6a",
+            "interact": {
+              "start": [
+                "redirect"
+              ],
+              "finish": {
+                "method": "redirect",
+                "uri": "localhost:8000/gnap/auth",
+                "nonce": "1c7628ca-73f3-4fce-af52-05d028dab09a"
+              }
+        }
+    }
+    "#;
+
+    const GRANT_REQUEST_DELETE: &str = r#"
+        {
+            "access_token": [
+              {
+                "access": [
+                  {
+                    "type": "waterbowl-access",
+                    "actions": [
+                      "delete"
+                    ],
+                    "locations": [
+                      "http://localhost:8080/bowls/"
+                    ]
+                  }
+                ],
+                "label": "bowls",
+                "flags": [
+                  "bearer"
+                ]
+              }
+            ],
+            "subject": null,
+            "client": "7e057b0c-17e8-4ab4-9260-2b33f32b2cce",
+            "user": "6785732c-682a-458b-8465-2986a77abf6a",
+            "interact": {
+              "start": [
+                "redirect"
+              ],
+              "finish": {
+                "method": "redirect",
+                "uri": "localhost:8000/gnap/auth",
+                "nonce": "1c7628ca-73f3-4fce-af52-05d028dab09a"
+              }
+        }
+    }
+    "#;
+
+    const RESOURSE_SERVER: &str = r#"
+    {
+        "resource_server": "e8a2968a-f183-45a3-b63d-4bbbd1dad276",
+        "resource_server_name": "simple-api",
+        "resource_server_key": "httsig",
+        "resource_set": [
+            {
+            "type": "waterbowl-access",
+            "actions": [
+                "read",
+                "create"
+            ],
+            "locations": [
+                "http://localhost:8080/bowls/"
+            ]
+            },
+            {
+            "type": "waterlevel-access",
+            "actions": [
+                "read",
+                "create",
+                "delete"
+            ],
+            "locations": [
+                "https://localhost:8080/waterlevels/"
+            ]
+            }
+        ]
+        
+    }
+    "#;
+
 
     #[test]
-    fn validate_access_request_failed() {}
+    fn validate_access_request_ok() {
+        let grant_request: GrantRequest = serde_json::from_str(GRANT_REQUEST).unwrap();
+        let rs: GnapResourceServer = serde_json::from_str(RESOURSE_SERVER).unwrap();
+
+        assert!(validate_access_request(&grant_request, rs).is_ok())
+
+    }
+
+    #[test]
+    fn validate_access_request_failed() {
+        let grant_request: GrantRequest = serde_json::from_str(GRANT_REQUEST_DELETE).unwrap();
+        let rs: GnapResourceServer = serde_json::from_str(RESOURSE_SERVER).unwrap();
+
+        assert_eq!(validate_access_request(&grant_request, rs).is_ok(), false)
+    }
 }

@@ -390,13 +390,16 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
                     _ => return Err(GnapError::AccessMismatch),
                 };
                 if us_rs.eq(&ac_rs) {
-                    let c = us_actions
-                        .into_iter()
-                        .zip(ac_actions.clone().into_iter())
-                        .filter(|(u, a)| u == a)
-                        .count();
-                    if c > 0 {
-                        return Ok(());
+                    debug!("{:#?}", us_rs);
+                    debug!("{:#?}", us_actions);
+                    debug!("{:#?}", ac_actions);
+
+                    for a in ac_actions.clone().into_iter() {
+                        if us_actions.contains(&a) {
+                            debug!("Found a match");
+                            return Ok(())
+                        }
+
                     }
                 }
             }
@@ -524,6 +527,7 @@ mod tests {
         ]
     }"#;
 
+    
     const TX_DATA_CREATE: &str = r#"{
         "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
         "state": "new",
@@ -534,19 +538,10 @@ mod tests {
                         {
                             "type": "waterbowl-access",
                             "actions": [
-                                "create"
+                                "read"
                             ],
                             "locations": [
                                 "http://localhost:8080/bowls/"
-                            ]
-                        },
-                        {
-                            "type": "waterlevel-access",
-                            "actions": [
-                                "read",
-                            ],
-                            "locations": [
-                                "http://localhost:8080/bowls/waterlevels/"
                             ]
                         }
                     ]
@@ -569,7 +564,7 @@ mod tests {
     }
       "#;
 
-    const TX_DATA_CREATE_READ: &str = r#"{
+      const TX_DATA_CREATE_READ: &str = r#"{
         "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
         "state": "new",
         "request": {
@@ -579,6 +574,7 @@ mod tests {
                         {
                             "type": "waterbowl-access",
                             "actions": [
+                                "read",
                                 "create"
                             ],
                             "locations": [
@@ -589,6 +585,7 @@ mod tests {
                             "type": "waterlevel-access",
                             "actions": [
                                 "read",
+                                "create"
                             ],
                             "locations": [
                                 "http://localhost:8080/bowls/waterlevels/"
@@ -613,6 +610,7 @@ mod tests {
         }
     }
       "#;
+    
     const USER_READ_DATA: &str = r#"{
         "id": "6785732c-682a-458b-8465-2986a77abf6a",
         "username": "kenneth",
@@ -724,5 +722,21 @@ mod tests {
         let tx = serde_json::from_str(TX_DATA_OK).unwrap();
 
         assert_eq!(validate_user_access(user, tx).is_ok(), false)
+    }
+
+    #[test]
+    fn test_tx_with_one_option_ok() {
+        let user = serde_json::from_str(USER_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA_CREATE).unwrap();
+
+        assert!(validate_user_access(user, tx).is_ok())
+    }
+
+    #[test]
+    fn test_tx_with_multiple_option_ok() {
+        let user = serde_json::from_str(USER_DATA).unwrap();
+        let tx = serde_json::from_str(TX_DATA_CREATE_READ).unwrap();
+
+        assert!(validate_user_access(user, tx).is_ok())
     }
 }
