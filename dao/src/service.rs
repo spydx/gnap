@@ -7,6 +7,7 @@
 
 use errors::GnapError;
 use log::{debug, trace};
+use model::tokens::Token;
 use model::{
     account::Account,
     client::{GnapClient, GnapClientRequest},
@@ -17,7 +18,6 @@ use model::{
 };
 use redis::{AsyncCommands, Value};
 use uuid::Uuid;
-use model::tokens::Token;
 
 use super::cache::GnapCache;
 use super::db::GnapDB;
@@ -44,7 +44,10 @@ impl Service {
         // Create the db and cache instances.  This should really migrate to the
         // Service module.  But it works for now.
         let db_client = GnapDB::new().await;
-        let _ = db_client.prune_db().await.expect("Failed to prune database");
+        let _ = db_client
+            .prune_db()
+            .await
+            .expect("Failed to prune database");
 
         let cache_client = GnapCache::new().await;
         Service {
@@ -117,12 +120,7 @@ impl Service {
     pub async fn add_client(&self, request: GnapClientRequest) -> Result<GnapClient, GnapError> {
         let client = self.db_client.add_client(request).await?;
         let mut con = self.cache_client.client.get_async_connection().await?;
-        let cache_key = format!(
-            "{}:{}",
-            GnapClient::cache_path(),
-            client.client_id
-        )
-        .to_owned();
+        let cache_key = format!("{}:{}", GnapClient::cache_path(), client.client_id).to_owned();
         let _: () = redis::pipe()
             .atomic()
             .set(&cache_key, &client.clone())
@@ -228,7 +226,6 @@ impl Service {
     }
 
     pub async fn get_transaction(&self, tx_id: String) -> Result<GnapTransaction, GnapError> {
-
         let tx = match self.db_client.get_transaction(tx_id).await {
             Ok(data) => data,
             Err(err) => return Err(err),
@@ -240,7 +237,7 @@ impl Service {
     pub async fn store_token(&self, token: Token) -> Result<(), GnapError> {
         match self.db_client.add_token(&token).await {
             Ok(_) => Ok(()),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 }

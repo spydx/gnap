@@ -3,8 +3,8 @@ use argon2::{Algorithm, Argon2, Params, PasswordHash, PasswordHasher, PasswordVe
 use model::instances::InstanceRequest;
 
 use super::auth::AuthDb;
-use super::db::GnapDB;
 use super::cache::GnapCache;
+use super::db::GnapDB;
 use errors::AuthError;
 use log::trace;
 use model::credentials::Credentials;
@@ -26,26 +26,31 @@ impl AuthService {
         Self {
             cache_client,
             db_client: db,
-            db_gnap: gnap
+            db_gnap: gnap,
         }
     }
 
-    pub async fn validate_account(&self, credentials: Credentials, instance: InstanceRequest) -> Result<bool, AuthError> {
+    pub async fn validate_account(
+        &self,
+        credentials: Credentials,
+        instance: InstanceRequest,
+    ) -> Result<bool, AuthError> {
         trace!("Fetching User from database");
         let user = self.db_client.fetch_account(credentials.username).await?;
         if user.is_some() {
             match validate_password(user.clone().unwrap().password, credentials.password) {
                 Ok(_) => {
                     println!("Password valid");
-                    match self.db_gnap.authenticate_tx(instance.instance_id, user.unwrap()).await {
+                    match self
+                        .db_gnap
+                        .authenticate_tx(instance.instance_id, user.unwrap())
+                        .await
+                    {
                         Ok(_) => Ok(true),
-                        Err(_) => Err(AuthError::DatabaseNotFound)
+                        Err(_) => Err(AuthError::DatabaseNotFound),
                     }
-                },
-                Err(_) => 
-                {   
-                    Ok(false)
-                },
+                }
+                Err(_) => Ok(false),
             }
         } else {
             Ok(false)

@@ -14,11 +14,11 @@ pub mod auth;
 pub mod auth_service;
 pub mod cache;
 pub mod db;
+pub mod resource;
+pub mod resource_service;
 pub mod service;
 pub mod token;
 pub mod token_service;
-pub mod resource;
-pub mod resource_service;
 
 #[cfg(test)]
 mod tests {

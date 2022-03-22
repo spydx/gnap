@@ -5,6 +5,7 @@ pub mod client;
 pub mod credentials;
 pub mod gnap;
 pub mod grant;
+pub mod instances;
 pub mod introspect;
 pub mod oauth;
 pub mod oidc;
@@ -12,7 +13,6 @@ pub mod resource;
 pub mod tokens;
 pub mod transaction;
 pub mod users;
-pub mod instances;
 
 /// CachePath ensures each model type that will be cached provides a
 /// consistent path to cache objects

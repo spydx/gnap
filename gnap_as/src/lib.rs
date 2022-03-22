@@ -28,13 +28,11 @@ pub async fn auth_state() -> web::Data<AuthService> {
 pub async fn token_state() -> web::Data<TokenService> {
     let tokenservice = TokenService::create().await;
     web::Data::new(tokenservice)
-    
 }
 
 pub async fn rs_state() -> web::Data<ResourceService> {
     let rs_service = ResourceService::create().await;
     web::Data::new(rs_service)
-    
 }
 
 /// Get addresses from ENV

@@ -22,7 +22,7 @@ impl Token {
             access_token: Some(access_token),
             tx: Some(tx),
             label: None,
-            expire: Some(0)
+            expire: Some(0),
         }
     }
     pub fn from_string(s: String) -> Self {
@@ -66,7 +66,7 @@ fn generate_token() -> String {
         let pos = rng.gen_range(0..charlength);
         token.push(characters.chars().nth(pos).unwrap());
     }
-    
+
     token
 }
 

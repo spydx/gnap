@@ -1,7 +1,7 @@
 //! Transaction API Handlers
 
 use actix_web::http::header::HeaderMap;
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{web, HttpRequest, HttpResponse};
 use dao::auth_service::AuthService;
 use errors::AuthError;
 use log::trace;
@@ -20,10 +20,7 @@ pub async fn auth(
     match login {
         Ok(credentials) => {
             let instance = InstanceRequest::create(instance.into_inner());
-            match service
-                .validate_account(credentials, instance)
-                .await
-            {
+            match service.validate_account(credentials, instance).await {
                 Ok(b) => {
                     let body = InstanceResponse::create(b);
                     HttpResponse::Ok().json(body)
@@ -76,18 +73,9 @@ fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, AuthError> {
         let credentials = String::from_utf8(decoded_bytes)
             .expect("Failed to turn bytes to string for credentials");
         let mut cred = credentials.splitn(2, ':');
-        let username = cred
-            .next()
-            .ok_or(AuthError::UserNameError)?
-            .to_string();
-        let password = cred
-            .next()
-            .ok_or(AuthError::PasswordError)?
-            .to_string();
-        Ok(Credentials {
-            username,
-            password,
-        })
+        let username = cred.next().ok_or(AuthError::UserNameError)?.to_string();
+        let password = cred.next().ok_or(AuthError::PasswordError)?.to_string();
+        Ok(Credentials { username, password })
     } else {
         Err(AuthError::BasicFailed)
     }

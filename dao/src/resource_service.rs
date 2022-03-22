@@ -1,8 +1,14 @@
-use model::{resource::{GnapResourceServer, GnapRegisterResourceServer}, introspect::InstrospectResponse, grant::GrantRequest};
-use log::{trace, debug};
-use crate::{resource::ResourceDB, cache::GnapCache, token_service::TokenService, service::Service};
+use crate::{
+    cache::GnapCache, resource::ResourceDB, service::Service, token_service::TokenService,
+};
 use errors::ResourceError;
+use log::{debug, trace};
 use model::introspect::IntrospectRequest;
+use model::{
+    grant::GrantRequest,
+    introspect::InstrospectResponse,
+    resource::{GnapRegisterResourceServer, GnapResourceServer},
+};
 
 #[derive(Clone)]
 pub struct ResourceService {
@@ -20,14 +26,17 @@ impl ResourceService {
         let tx_service = Service::create().await;
 
         Self {
-            db_client, 
+            db_client,
             cache_client,
             token_service,
             tx_service,
         }
     }
 
-    pub async fn add_resource_server(&self, rs: GnapRegisterResourceServer) -> Result<(), ResourceError> {
+    pub async fn add_resource_server(
+        &self,
+        rs: GnapRegisterResourceServer,
+    ) -> Result<(), ResourceError> {
         trace!("Registering resources");
         let rs = GnapResourceServer::create(rs);
         match self.db_client.add_resource(rs).await {
@@ -36,46 +45,48 @@ impl ResourceService {
         }
     }
 
-    pub async fn register_resources_set(&self, rs: GnapResourceServer) -> Result<(), ResourceError> {
+    pub async fn register_resources_set(
+        &self,
+        rs: GnapResourceServer,
+    ) -> Result<(), ResourceError> {
         trace!("Registering resources");
         match self.db_client.add_access_to_resources(rs).await {
             Ok(()) => Ok(()),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 
-    pub async fn introspect_token(&self, ir: IntrospectRequest) -> Result<InstrospectResponse, ResourceError> {
-
-        
+    pub async fn introspect_token(
+        &self,
+        ir: IntrospectRequest,
+    ) -> Result<InstrospectResponse, ResourceError> {
         // 1. Get RS
         let target = ir.resource_server.clone();
-        let resource_server = match self
-            .db_client
-            .fetch_resource_server(target)
-            .await
-            {
-                Ok(data) => data,
-                Err(_) => None
+        let resource_server = match self.db_client.fetch_resource_server(target).await {
+            Ok(data) => data,
+            Err(_) => None,
+        };
 
-            };
-        
-        
         let resource_server = if resource_server.is_none() {
-            return Err(ResourceError::NotFound)
+            return Err(ResourceError::NotFound);
         } else {
             resource_server.unwrap()
         };
 
         debug!("We be here");
         // 2. Get token
-        let token = match self.token_service.fetch_token_by_accesstoken(ir.access_token.clone()).await {
+        let token = match self
+            .token_service
+            .fetch_token_by_accesstoken(ir.access_token.clone())
+            .await
+        {
             Ok(t) => Some(t),
             Err(_) => None,
         };
 
         debug!("We there");
         let token = if token.is_none() {
-            return Err(ResourceError::TokenError)
+            return Err(ResourceError::TokenError);
         } else {
             token.unwrap()
         };
@@ -88,11 +99,11 @@ impl ResourceService {
         };
 
         let access_request = if ac.is_none() {
-            return Err(ResourceError::AccessNotFound)
+            return Err(ResourceError::AccessNotFound);
         } else {
             ac.unwrap().request.unwrap()
         };
-        
+
         match validate_access_request(&access_request, resource_server) {
             Ok(_) => {
                 let key = Some(String::from("httpsig"));
@@ -103,18 +114,20 @@ impl ResourceService {
                 let response = InstrospectResponse {
                     active: token_active,
                     access: Some(atr.unwrap().access.to_owned()),
-                    key 
+                    key,
                 };
                 println!("{:#?}", response);
                 Ok(response)
-            },
-            Err(err) => Err(err)
+            }
+            Err(err) => Err(err),
         }
     }
 }
 
-
-fn validate_access_request(grant_request: &GrantRequest , rs: GnapResourceServer) -> Result<(), ResourceError> {
+fn validate_access_request(
+    grant_request: &GrantRequest,
+    rs: GnapResourceServer,
+) -> Result<(), ResourceError> {
     debug!("req: {:#?}", grant_request);
     debug!("rs:  {:#?}", rs);
     for wanted_access in rs.resource_set {
@@ -126,7 +139,7 @@ fn validate_access_request(grant_request: &GrantRequest , rs: GnapResourceServer
                     debug!("Validated: {:#?}", res);
                     if res {
                         debug!("Did this");
-                        return Ok(())
+                        return Ok(());
                     }
                 }
             }
@@ -135,17 +148,11 @@ fn validate_access_request(grant_request: &GrantRequest , rs: GnapResourceServer
     Err(ResourceError::AccessNotFound)
 }
 
-
 #[cfg(test)]
 mod test {
     #[test]
-    fn validate_access_request_ok() {
-
-    }
+    fn validate_access_request_ok() {}
 
     #[test]
-    fn validate_access_request_failed() {
-
-    }
-
+    fn validate_access_request_failed() {}
 }

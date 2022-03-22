@@ -48,7 +48,7 @@ pub enum ResourceError {
     #[error("Can't store a RS in the database")]
     DatabaseError(#[from] mongodb::error::Error),
     #[error("General error")]
-    GeneralError
+    GeneralError,
 }
 
 #[derive(Error, Debug)]
@@ -60,9 +60,8 @@ pub enum TokenError {
     #[error("Can't find token in the database")]
     NotFound,
     #[error("Can't rotate token")]
-    RotateToken
+    RotateToken,
 }
-
 
 impl From<serde_json::Error> for GnapError {
     fn from(_source: serde_json::Error) -> Self {

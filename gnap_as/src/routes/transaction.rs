@@ -34,14 +34,10 @@ pub fn routes(cfg: &mut web::ServiceConfig) {
             )
             .service(
                 web::scope("/auth")
-                .service(
-                    web::resource("/")
-                    .route(web::put().to(handlers::auth::create))
-                )
-                .service(
-                    web::resource("/{instance}")
-                        .route(web::get().to(handlers::auth::auth))
-                ),
+                    .service(web::resource("/").route(web::put().to(handlers::auth::create)))
+                    .service(
+                        web::resource("/{instance}").route(web::get().to(handlers::auth::auth)),
+                    ),
             )
             .service(
                 web::scope("/token").service(

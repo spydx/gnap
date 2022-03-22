@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct InstanceRequest {
@@ -12,17 +12,12 @@ pub struct InstanceResponse {
 
 impl InstanceResponse {
     pub fn create(value: bool) -> Self {
-        Self {
-            status: value
-        }
+        Self { status: value }
     }
 }
 
-
 impl InstanceRequest {
     pub fn create(value: String) -> Self {
-        Self {
-            instance_id: value
-        }
+        Self { instance_id: value }
     }
 }

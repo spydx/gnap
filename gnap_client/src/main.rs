@@ -1,19 +1,18 @@
 use dotenv::dotenv;
+use gnap_client::gnap_session::GnapSession;
 use gnap_client::make_request;
 use log::trace;
 use model::gnap::GnapOptions;
 use model::grant::*;
-use std::error::Error as StdError;
-use gnap_client::gnap_session::GnapSession;
-use std::io;
 use model::instances::InstanceResponse;
+use std::error::Error as StdError;
+use std::io;
 
 const GNAP_AS_HOST: &str = "http://localhost:8000";
 
 fn as_path(part: &str) -> String {
     format!("{}/{}", GNAP_AS_HOST, part)
 }
-
 
 async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
     let path = as_path(".well-known/gnap-as-rs");
@@ -35,7 +34,7 @@ async fn get_config() -> Result<GnapOptions, Box<dyn StdError>> {
 async fn main() -> Result<(), Box<dyn StdError>> {
     dotenv().ok();
     pretty_env_logger::init();
-    
+
     // Get the GNAP well knowns from the server
     let options = get_config().await?;
 
@@ -66,17 +65,21 @@ async fn main() -> Result<(), Box<dyn StdError>> {
 
     gnap_session.instance_id = Some(step3.instance_id);
     gnap_session.tx_contiune = Some(step3.interact.unwrap().tx_continue.uri);
-    
+
     //let (username, password ) = get_user_input().expect("Failed to get user input");
 
     let (username, password) = ("kenneth", "password");
 
     let secret = base64::encode(format!("{}:{}", username, password));
- 
+
     let instance = gnap_session.instance_id.clone().unwrap();
-    
+
     let step4: InstanceResponse = reqwest::Client::new()
-        .get(format!("http://{}/{}",&gnap_session.redirect.unwrap(), instance))
+        .get(format!(
+            "http://{}/{}",
+            &gnap_session.redirect.unwrap(),
+            instance
+        ))
         .header("Content-type", "application/x-www-form-urlencoded")
         .header("Authorization", "Basic ".to_owned() + &secret)
         .json(&instance)
@@ -86,8 +89,9 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     println!("Response: {:#?}", step4);
-     
-    let continue_request = ContinuationRequest::create_with_ref(gnap_session.instance_id.clone().unwrap());
+
+    let continue_request =
+        ContinuationRequest::create_with_ref(gnap_session.instance_id.clone().unwrap());
     let target = gnap_session.tx_contiune.unwrap().to_string();
     println!("{}", target);
     let step8: GrantResponse = reqwest::Client::new()
@@ -103,7 +107,6 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     Ok(())
 }
 
-
 #[allow(dead_code)]
 fn get_user_input() -> Result<(String, String), Box<dyn StdError>> {
     let mut username = String::new();
@@ -114,7 +117,10 @@ fn get_user_input() -> Result<(String, String), Box<dyn StdError>> {
     println!("Password: ");
     io::stdin().read_line(&mut password)?;
 
-    Ok((username.trim_end().to_string(), password.trim_end().to_string()))
+    Ok((
+        username.trim_end().to_string(),
+        password.trim_end().to_string(),
+    ))
 }
 /*
 

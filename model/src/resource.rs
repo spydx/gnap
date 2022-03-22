@@ -9,27 +9,26 @@
 
 use redis::{RedisWrite, ToRedisArgs};
 use serde::{Deserialize, Serialize};
-use std::{str::FromStr};
+use std::str::FromStr;
 use uuid::Uuid;
 use void::Void;
 
 use crate::grant::AccessRequest;
 
-
-#[derive(Serialize ,Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct GnapRegisterResourceServer {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_server_name: Option<String>, 
+    pub resource_server_name: Option<String>,
     pub resource_server_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_set: Option<Vec<AccessRequest>>,
 }
 
-#[derive(Serialize ,Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GnapResourceServer {
     pub resource_server: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub resource_server_name: Option<String>, 
+    pub resource_server_name: Option<String>,
     pub resource_server_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resource_set: Option<Vec<AccessRequest>>,
@@ -43,7 +42,7 @@ impl GnapResourceServer {
             resource_server: id,
             resource_server_name: register.resource_server_name,
             resource_server_key: register.resource_server_key,
-            resource_set: register.resource_set
+            resource_set: register.resource_set,
         }
     }
 }

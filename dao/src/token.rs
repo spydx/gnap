@@ -31,7 +31,6 @@ impl TokenDb {
         }
     }
 
-
     pub async fn prune_db(&self) -> Result<(), TokenError> {
         debug!("Pruning database");
         let collection = self.database.collection::<Token>(COLLECTION);
@@ -91,7 +90,7 @@ impl TokenDb {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .find_one( doc! { "id": &token.id }, None)
+            .find_one(doc! { "id": &token.id }, None)
             .await
             .map_err(TokenError::DatabaseError);
 
@@ -102,8 +101,8 @@ impl TokenDb {
                 } else {
                     None
                 }
-            },
-            Err(_) => None
+            }
+            Err(_) => None,
         };
 
         if res_token.is_none() {
@@ -113,12 +112,11 @@ impl TokenDb {
         }
     }
 
-
     pub async fn fetch_token_by_id(&self, token_id: String) -> Result<Token, TokenError> {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .find_one( doc! { "id": &token_id }, None)
+            .find_one(doc! { "id": &token_id }, None)
             .await
             .map_err(TokenError::DatabaseError);
 
@@ -129,8 +127,8 @@ impl TokenDb {
                 } else {
                     Ok(token.unwrap())
                 }
-            },
-            Err(_) => Err(TokenError::NotFound)
+            }
+            Err(_) => Err(TokenError::NotFound),
         }
     }
 
@@ -140,7 +138,7 @@ impl TokenDb {
         let cursor_result = self
             .database
             .collection::<Token>(COLLECTION)
-            .find_one(filter,None)
+            .find_one(filter, None)
             .await
             .map_err(TokenError::DatabaseError);
 
@@ -152,7 +150,7 @@ impl TokenDb {
                     Err(TokenError::NotFound)
                 }
             }
-            Err(_) => Err(TokenError::NotFound)
+            Err(_) => Err(TokenError::NotFound),
         }
     }
 }

@@ -211,19 +211,18 @@ impl GrantRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContinuationAccessToken {}
 
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ContinuationRequest {
     pub interact_ref: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub interact: Option<InteractRequest>
+    pub interact: Option<InteractRequest>,
 }
 
 impl ContinuationRequest {
     pub fn create_with_ref(int_ref: String) -> Self {
         Self {
             interact_ref: int_ref,
-            interact: None
+            interact: None,
         }
     }
 }

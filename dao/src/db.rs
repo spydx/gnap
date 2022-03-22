@@ -5,13 +5,13 @@ use errors::GnapError;
 use futures::stream::TryStreamExt;
 use log::{debug, trace};
 use model::grant::AccessRequest;
-use model::transaction::{TransactionOptions, GnapTransaction, GnapTransactionState};
+use model::transaction::{GnapTransaction, GnapTransactionState, TransactionOptions};
 use model::{
-    users::User,
     account::{Account, AccountRequest},
     client::{GnapClient, GnapClientRequest},
     gnap::GnapOptions,
     tokens::Token,
+    users::User,
 };
 use mongodb::{bson::doc, options::ClientOptions, Client, Database};
 use std::env;
@@ -29,7 +29,6 @@ const COL_GNAPOPTIONS: &str = "service_config";
 const COL_ACCOUNTS: &str = "accounts";
 const COL_CLIENTS: &str = "clients";
 const COL_TOKEN: &str = "tokens";
-
 
 //const MONGO_URI: &str = "mongodb://127.0.0.1:27017";
 
@@ -49,7 +48,7 @@ impl GnapDB {
         // Create the client and grab a database handle
         let client = Client::with_options(client_options).expect("Failed to create MongoDB client");
         let db = client.database(&database);
-        
+
         Self {
             client,
             database: db,
@@ -197,7 +196,7 @@ impl GnapDB {
                 Some(result) => {
                     trace!("Fetched an account");
                     Ok(Some(result))
-                },
+                }
                 None => {
                     trace!("Account not found");
                     Err(GnapError::NotFound)
@@ -217,7 +216,7 @@ impl GnapDB {
             Ok(_) => {
                 debug!("Added account: {:?}", &account);
                 Ok(account)
-            },
+            }
             Err(err) => {
                 debug!("Error saving account: {:?}", &err);
                 Err(GnapError::DatabaseError(err))
@@ -231,33 +230,34 @@ impl GnapDB {
             Ok(_) => {
                 debug!("Added account: {:?}", &tx);
                 Ok(tx)
-            },
+            }
             Err(err) => {
                 debug!("Error saving tx: {:?}", &err);
                 Err(GnapError::DatabaseError(err))
             }
-        }        
+        }
     }
 
-    pub async fn get_transaction(&self, tx_id: String) -> Result<Option<GnapTransaction>, GnapError> {
-       let cursor_result = self
+    pub async fn get_transaction(
+        &self,
+        tx_id: String,
+    ) -> Result<Option<GnapTransaction>, GnapError> {
+        let cursor_result = self
             .database
             .collection::<GnapTransaction>(COL_TRANSACTION)
-            .find_one( doc! { "tx_id": &tx_id}, None)
+            .find_one(doc! { "tx_id": &tx_id}, None)
             .await
             .map_err(GnapError::DatabaseError);
-        
+
         match cursor_result {
-            Ok(result) => {
-                match result { 
-                    Some(tx) => {
-                        trace!("Fetched TX");
-                        Ok(Some(tx))
-                    },
-                    None => {
-                        trace!("Account not found");
-                        Err(GnapError::NotFound)
-                    }
+            Ok(result) => match result {
+                Some(tx) => {
+                    trace!("Fetched TX");
+                    Ok(Some(tx))
+                }
+                None => {
+                    trace!("Account not found");
+                    Err(GnapError::NotFound)
                 }
             },
             Err(e) => {
@@ -272,59 +272,55 @@ impl GnapDB {
 
         match collection.delete_one(doc! { "tx_id": &tx_id}, None).await {
             Ok(_) => Ok(()),
-            Err(err) => {
-                Err(GnapError::DatabaseError(err))
-            }
+            Err(err) => Err(GnapError::DatabaseError(err)),
         }
     }
 
-    pub async fn update_transaction(&self, tx: GnapTransaction) -> Result<GnapTransaction, GnapError> {
+    pub async fn update_transaction(
+        &self,
+        tx: GnapTransaction,
+    ) -> Result<GnapTransaction, GnapError> {
         let cursor_result = self
             .database
             .collection::<GnapTransaction>(COL_TRANSACTION)
-            .find_one_and_replace(doc! {"tx_id": &tx.tx_id}, &tx,None)
+            .find_one_and_replace(doc! {"tx_id": &tx.tx_id}, &tx, None)
             .await
             .map_err(GnapError::DatabaseError);
 
         match cursor_result {
             Ok(_) => Ok(tx),
-            Err(err) => {
-                Err(err)
-            }
-        }    
+            Err(err) => Err(err),
+        }
     }
 
     pub async fn authenticate_tx(&self, tx_id: String, user: User) -> Result<(), GnapError> {
         let filter = doc! {"tx_id": &tx_id };
 
-        let collection = self
-            .database
-            .collection::<GnapTransaction>(COL_TRANSACTION);
+        let collection = self.database.collection::<GnapTransaction>(COL_TRANSACTION);
 
         let cursor_result = collection
             .find_one(filter.clone(), None)
             .await
             .map_err(GnapError::DatabaseError);
 
-    
         let tx = match cursor_result {
             Ok(trans) => {
                 if let Some(trans) = trans {
                     match validate_user_access(user.clone(), trans.clone()) {
-                        Ok(_) => {},
-                        Err(err) => return Err(err)
+                        Ok(_) => {}
+                        Err(err) => return Err(err),
                     }
                     let update = trans
-                    .update_state(GnapTransactionState::Authorized)
-                    .update_grantrequest(user.id);
+                        .update_state(GnapTransactionState::Authorized)
+                        .update_grantrequest(user.id);
                     Some(update)
                 } else {
                     None
                 }
-          }, 
+            }
             Err(_) => None,
         };
-        
+
         if tx.is_some() {
             let res = collection
                 .find_one_and_replace(filter.clone(), &tx.unwrap(), None)
@@ -359,36 +355,48 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
         .zip(user_access.into_iter()).filter(|&(grant, access)| grant == access).count();
     */
     for request in grant.access_token.clone().into_iter() {
-        let c = request.access.into_iter()
-            .zip(user_access.clone().into_iter()).filter(|(g, a)| g == a).count();
+        let c = request
+            .access
+            .into_iter()
+            .zip(user_access.clone().into_iter())
+            .filter(|(g, a)| g == a)
+            .count();
         if c > 0 {
-            return Ok(())
+            return Ok(());
         }
     }
 
     for request in grant.access_token.into_iter() {
         let access = request.access.clone();
         for ac in access.into_iter() {
-            
             let (ac_rs, ac_actions) = match ac {
-                AccessRequest::Value { resource_type, actions, locations: _, data_types: _ } => {
-                    (resource_type, actions.unwrap())
-                },
-                _ => return Err(GnapError::AccessMismatch)
+                AccessRequest::Value {
+                    resource_type,
+                    actions,
+                    locations: _,
+                    data_types: _,
+                } => (resource_type, actions.unwrap()),
+                _ => return Err(GnapError::AccessMismatch),
             };
 
             for us in user_access.clone().into_iter() {
                 let (us_rs, us_actions) = match us {
-                    AccessRequest::Value { resource_type, actions, locations: _, data_types: _ } => {
-                        (resource_type, actions.unwrap())
-                    },
-                    _ => return Err(GnapError::AccessMismatch)
+                    AccessRequest::Value {
+                        resource_type,
+                        actions,
+                        locations: _,
+                        data_types: _,
+                    } => (resource_type, actions.unwrap()),
+                    _ => return Err(GnapError::AccessMismatch),
                 };
                 if us_rs.eq(&ac_rs) {
-                    let c = us_actions.into_iter()
-                        .zip(ac_actions.clone().into_iter()).filter(|(u, a)| u == a ).count();
+                    let c = us_actions
+                        .into_iter()
+                        .zip(ac_actions.clone().into_iter())
+                        .filter(|(u, a)| u == a)
+                        .count();
                     if c > 0 {
-                        return Ok(())
+                        return Ok(());
                     }
                 }
             }
@@ -441,7 +449,7 @@ mod tests {
     }
   "#;
 
-  const TX_DATA_OK: &str = r#"{
+    const TX_DATA_OK: &str = r#"{
     "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
     "state": "new",
     "request": {
@@ -516,7 +524,95 @@ mod tests {
         ]
     }"#;
 
+    const TX_DATA_CREATE: &str = r#"{
+        "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
+        "state": "new",
+        "request": {
+            "access_token": [
+                {
+                    "access": [
+                        {
+                            "type": "waterbowl-access",
+                            "actions": [
+                                "create"
+                            ],
+                            "locations": [
+                                "http://localhost:8080/bowls/"
+                            ]
+                        },
+                        {
+                            "type": "waterlevel-access",
+                            "actions": [
+                                "read",
+                            ],
+                            "locations": [
+                                "http://localhost:8080/bowls/waterlevels/"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "subject": null,
+            "client": "7e057b0c-17e8-4ab4-9260-2b33f32b2cce",
+            "user": null,
+            "interact": {
+                "start": [
+                    "redirect"
+                ],
+                "finish": {
+                    "method": "redirect",
+                    "uri": "localhost:8000/gnap/auth",
+                    "nonce": "419b6c799164494bb04958d04152e2b4"
+                }
+            }
+        }
+    }
+      "#;
 
+    const TX_DATA_CREATE_READ: &str = r#"{
+        "tx_id": "32aabb1c-5e1e-4ca9-992c-67b1b6a9de08",
+        "state": "new",
+        "request": {
+            "access_token": [
+                {
+                    "access": [
+                        {
+                            "type": "waterbowl-access",
+                            "actions": [
+                                "create"
+                            ],
+                            "locations": [
+                                "http://localhost:8080/bowls/"
+                            ]
+                        },
+                        {
+                            "type": "waterlevel-access",
+                            "actions": [
+                                "read",
+                            ],
+                            "locations": [
+                                "http://localhost:8080/bowls/waterlevels/"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "subject": null,
+            "client": "7e057b0c-17e8-4ab4-9260-2b33f32b2cce",
+            "user": null,
+            "interact": {
+                "start": [
+                    "redirect"
+                ],
+                "finish": {
+                    "method": "redirect",
+                    "uri": "localhost:8000/gnap/auth",
+                    "nonce": "419b6c799164494bb04958d04152e2b4"
+                }
+            }
+        }
+    }
+      "#;
     const USER_READ_DATA: &str = r#"{
         "id": "6785732c-682a-458b-8465-2986a77abf6a",
         "username": "kenneth",
@@ -574,13 +670,12 @@ mod tests {
 
     #[test]
     fn parse_tx() {
-        let _: GnapTransaction= serde_json::from_str(TX_DATA).unwrap();
+        let _: GnapTransaction = serde_json::from_str(TX_DATA).unwrap();
     }
-
 
     #[test]
     fn parse_tx_ok() {
-        let _: GnapTransaction= serde_json::from_str(TX_DATA_OK).unwrap();
+        let _: GnapTransaction = serde_json::from_str(TX_DATA_OK).unwrap();
     }
 
     #[test]
@@ -591,7 +686,7 @@ mod tests {
         let res = validate_user_access(user, tx);
         match res {
             Ok(_) => assert!(false),
-            Err(_) => assert!(true)
+            Err(_) => assert!(true),
         }
     }
 
@@ -603,7 +698,7 @@ mod tests {
         let res = validate_user_access(user, tx);
         match res {
             Ok(_) => assert!(true),
-            Err(_) => assert!(false)
+            Err(_) => assert!(false),
         }
     }
 
@@ -631,4 +726,3 @@ mod tests {
         assert_eq!(validate_user_access(user, tx).is_ok(), false)
     }
 }
-

@@ -121,12 +121,12 @@ impl ToRedisArgs for &TransactionOptions {
 }
 
 /* From the Oauth.xyz-java Implementation
-		NEW,		// newly created transaction, nothing's been done to it yet
-		ISSUED,		// an access token has been issued
-		AUTHORIZED,	// the user has authorized but a token has not been issued yet
-		WAITING,	// we are waiting for the user
-		DENIED; 	// the user denied the transaction
- */
+       NEW,		// newly created transaction, nothing's been done to it yet
+       ISSUED,		// an access token has been issued
+       AUTHORIZED,	// the user has authorized but a token has not been issued yet
+       WAITING,	// we are waiting for the user
+       DENIED; 	// the user denied the transaction
+*/
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum GnapTransactionState {
@@ -161,12 +161,9 @@ impl GnapTransaction {
             request,
         }
     }
-    
+
     pub fn update_state(self, state: GnapTransactionState) -> Self {
-        Self {
-            state,
-            ..self
-        }
+        Self { state, ..self }
     }
     pub fn update_grantrequest(self, user: String) -> Self {
         let gr = self.request.unwrap().add_user(user);
@@ -174,7 +171,6 @@ impl GnapTransaction {
             request: Some(gr),
             ..self
         }
-
     }
 }
 
