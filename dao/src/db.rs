@@ -366,7 +366,7 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
         }
     }
 
-    for request in grant.access_token.clone().into_iter() {
+    for request in grant.access_token.into_iter() {
         let access = request.access.clone();
         for ac in access.into_iter() {
             

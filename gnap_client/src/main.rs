@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     println!("Response: {:#?}", step4);
-    /* 
+     
     let continue_request = ContinuationRequest::create_with_ref(gnap_session.instance_id.clone().unwrap());
     let target = gnap_session.tx_contiune.unwrap().to_string();
     println!("{}", target);
@@ -99,7 +99,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?;
 
     println!("Response: {:#?}", step8);
-*/
+
     Ok(())
 }
 

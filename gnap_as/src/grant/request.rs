@@ -57,7 +57,7 @@ pub async fn process_request(
     let response = GrantResponse {
         instance_id: tx.tx_id,
         interact: Some(interact_response),
-        access: None,
+        access_token: None,
     };
 
     Ok(response)
@@ -97,7 +97,7 @@ pub async fn process_continue_request(
             let gr = GrantResponse {
                 instance_id: tx.tx_id.clone(),
                 interact: None,
-                access: Some(access_token), // missing subject
+                access_token: Some(access_token), // missing subject
             };
             Ok(gr)
         }

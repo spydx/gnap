@@ -327,7 +327,7 @@ pub struct GrantResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interact: Option<InteractResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub access: Option<AccessToken>,
+    pub access_token: Option<AccessToken>,
 }
 
 impl GrantResponse {
@@ -339,7 +339,7 @@ impl GrantResponse {
         Self {
             instance_id: Self::create_id(),
             interact: None,
-            access: None,
+            access_token: None,
         }
     }
 }
@@ -369,7 +369,7 @@ mod tests {
         let response = GrantResponse {
             instance_id: tx_id,
             interact: Some(ic),
-            access: None,
+            access_token: None,
         };
 
         println!("{}", serde_json::to_string(&response).expect("oops"));
