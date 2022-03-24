@@ -326,7 +326,7 @@ pub struct GrantResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interact: Option<InteractResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub access_token: Option<AccessToken>,
+    pub access_token: Option<Vec<AccessToken>>,
 }
 
 impl GrantResponse {

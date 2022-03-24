@@ -1,7 +1,7 @@
 use dao::service::Service;
 use errors::GnapError;
 use log::{error, trace};
-use model::tokens::Token;
+use model::tokens::{Token,TokenBuilder};
 use model::transaction::GnapTransactionState::*;
 use model::{grant::*, GnapID};
 pub async fn process_request(
@@ -74,30 +74,44 @@ pub async fn process_continue_request(
 
     match tx.state {
         Authorized => {
+
+            // only create one token for the first access..
+            // this should be able to handle multiple token.
+            // if there are mutiple access_requests, then there should be generated multiple tokens.
+            // and it has to have a unique label for each.
             let t = Token::create(tx_id.clone());
             let _ = service
                 .store_token(t.clone())
                 .await
                 .expect("Failed to store token");
 
+            let mut access_tokens = Vec::<AccessToken>::new();
             let grantrequest = tx.request.clone().unwrap();
-            let tokenrequest = grantrequest.access_token.first().unwrap();
-            let access_token = AccessToken {
-                label: None,
-                value: t.access_token.unwrap(),
-                manage: Some(format!(
-                    "http://localhost:8000/gnap/token/{}",
-                    &t.id.to_owned()
-                )),
-                access: Some(tokenrequest.access.to_owned()),
-                key: None,
-                expires_in: t.expire,
-                flags: Some(vec![AccessTokenFlag::Bearer]),
-            };
+            for grant_token in grantrequest.access_token {
+                let label = grant_token.label;
+                let t = TokenBuilder::new(tx_id.clone())
+                                            .label(label.clone())
+                                            .build();
+                let at = AccessToken {
+                    label: label,
+                    value: t.access_token.unwrap(),
+                    manage: Some(format!(
+                        "http://localhost:8000/gnap/token/{}",
+                        &t.id.to_owned()
+                    )),
+                    access: Some(grant_token.access.to_owned()),
+                    key: None,
+                    expires_in: t.expire,
+                    flags: Some(vec![AccessTokenFlag::Bearer]),
+                };
+                access_tokens.push(at)
+            }
+            //let tokenrequest = grantrequest.access_token.first().unwrap();
+
             let gr = GrantResponse {
                 instance_id: tx.tx_id.clone(),
                 interact: None,
-                access_token: Some(access_token), // missing subject
+                access_token: Some(access_tokens), // missing subject
             };
             Ok(gr)
         }
