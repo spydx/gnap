@@ -347,13 +347,16 @@ impl GnapDB {
 fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError> {
     let grant = tx.request.unwrap();
     let user_access = user.access.unwrap();
-    debug!("UserAccess {:#?}", &user_access);
+    //debug!("UserAccess {:#?}", &user_access);
     debug!("Lets VALIDATE");
 
     /*let res = grant.access_token.unwrap().access
         .into_iter()
         .zip(user_access.into_iter()).filter(|&(grant, access)| grant == access).count();
     */
+    debug!("Grant: {:#?}", grant);
+    debug!("UA: {:#?}", user_access);
+
     for request in grant.access_token.clone().into_iter() {
         let c = request
             .access
@@ -362,6 +365,7 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
             .filter(|(g, a)| g == a)
             .count();
         if c > 0 {
+            
             return Ok(());
         }
     }
@@ -399,7 +403,6 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
                             debug!("Found a match");
                             return Ok(())
                         }
-
                     }
                 }
             }

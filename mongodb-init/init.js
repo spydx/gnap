@@ -71,7 +71,60 @@ const users = [
                     "create"
                 ],
                 "locations": [
-                    "https://localhost:8080/bowls/waterlevels/"
+                    "https://localhost:8080/waterlevels/"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "username": "alice",
+        "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
+        "access": [
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "read",
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/"
+                ]
+            },
+            {
+                "type": "waterlevel-access",
+                "actions": [
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/waterlevels/"
+                ]
+            }
+        ]
+    },
+    {
+        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "username": "bob",
+        "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
+        "access": [
+            {
+                "type": "waterbowl-access",
+                "actions": [
+                    "read",
+                    "create"
+                ],
+                "locations": [
+                    "https://localhost:8080/bowls/"
+                ]
+            },
+            {
+                "type": "waterlevel-access",
+                "actions": [
+                    "read",
+                    "create",
+                    "delete"
+                ],
+                "locations": [
+                    "https://localhost:8080/waterlevels/"
                 ]
             }
         ]
@@ -102,7 +155,7 @@ const resources = [
                     "delete"
                 ],
                 "locations": [
-                    "https://localhost:8080/bowls/waterlevels/"
+                    "https://localhost:8080/waterlevels/"
                 ]
             }
         ]

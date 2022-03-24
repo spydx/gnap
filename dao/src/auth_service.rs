@@ -6,7 +6,7 @@ use super::auth::AuthDb;
 use super::cache::GnapCache;
 use super::db::GnapDB;
 use errors::AuthError;
-use log::trace;
+use log::{trace, debug};
 use model::credentials::Credentials;
 use model::users::User;
 use rand;
@@ -40,7 +40,7 @@ impl AuthService {
         if user.is_some() {
             match validate_password(user.clone().unwrap().password, credentials.password) {
                 Ok(_) => {
-                    println!("Password valid");
+                    debug!("Password valid");
                     match self
                         .db_gnap
                         .authenticate_tx(instance.instance_id, user.unwrap())

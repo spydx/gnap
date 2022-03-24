@@ -1,6 +1,6 @@
 use dao::service::Service;
 use errors::GnapError;
-use log::{error, trace};
+use log::{error, trace, debug};
 use model::tokens::{Token,TokenBuilder};
 use model::transaction::GnapTransactionState::*;
 use model::{grant::*, GnapID};
@@ -89,6 +89,7 @@ pub async fn process_continue_request(
             let grantrequest = tx.request.clone().unwrap();
             for grant_token in grantrequest.access_token {
                 let label = grant_token.label;
+                debug!("{:#?}", label);
                 let t = TokenBuilder::new(tx_id.clone())
                                             .label(label.clone())
                                             .build();
