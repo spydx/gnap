@@ -165,7 +165,14 @@ impl GnapTransaction {
     pub fn update_state(self, state: GnapTransactionState) -> Self {
         Self { state, ..self }
     }
-    pub fn update_grantrequest(self, user: String) -> Self {
+
+    pub fn update_grantrequest(self, gr: GrantRequest) -> Self {
+        Self {
+            request: Some(gr),
+            ..self
+        }
+    }
+    pub fn update_user(self, user: String) -> Self {
         let gr = self.request.unwrap().add_user(user);
         Self {
             request: Some(gr),

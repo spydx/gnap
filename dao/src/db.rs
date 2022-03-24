@@ -4,7 +4,7 @@ use core::result::Result;
 use errors::GnapError;
 use futures::stream::TryStreamExt;
 use log::{debug, trace};
-use model::grant::AccessRequest;
+use model::grant::{AccessRequest, GrantRequest, AccessTokenRequest};
 use model::transaction::{GnapTransaction, GnapTransactionState, TransactionOptions};
 use model::{
     account::{Account, AccountRequest},
@@ -306,13 +306,14 @@ impl GnapDB {
         let tx = match cursor_result {
             Ok(trans) => {
                 if let Some(trans) = trans {
-                    match validate_user_access(user.clone(), trans.clone()) {
-                        Ok(_) => {}
+                    let gr = match validate_user_access(user.clone(), trans.clone()) {
+                        Ok(gr) => gr,
                         Err(err) => return Err(err),
-                    }
+                    };
                     let update = trans
                         .update_state(GnapTransactionState::Authorized)
-                        .update_grantrequest(user.id);
+                        .update_grantrequest(gr)
+                        .update_user(user.id);
                     Some(update)
                 } else {
                     None
@@ -344,7 +345,7 @@ impl GnapDB {
     }
 }
 
-fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError> {
+fn validate_user_access(user: User, tx: GnapTransaction) -> Result<GrantRequest, GnapError> {
     let grant = tx.request.unwrap();
     let user_access = user.access.unwrap();
     //debug!("UserAccess {:#?}", &user_access);
@@ -356,7 +357,7 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
     */
     debug!("Grant: {:#?}", grant);
     debug!("UA: {:#?}", user_access);
-
+    /* 
     for request in grant.access_token.clone().into_iter() {
         let c = request
             .access
@@ -368,20 +369,25 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
             
             return Ok(());
         }
-    }
+    } */
+
+    let mut approved_access_tokens = Vec::<AccessTokenRequest>::new();
 
     for request in grant.access_token.into_iter() {
         let access = request.access.clone();
+        
+        let mut approved_access = Vec::<AccessRequest>::new();
         for ac in access.into_iter() {
-            let (ac_rs, ac_actions) = match ac {
+            let (ac_rs, ac_actions, ac_loc, ac_type) = match ac {
                 AccessRequest::Value {
                     resource_type,
                     actions,
-                    locations: _,
-                    data_types: _,
-                } => (resource_type, actions.unwrap()),
+                    locations,
+                    data_types,
+                } => (resource_type, actions.unwrap(), locations, data_types),
                 _ => return Err(GnapError::AccessMismatch),
             };
+            
 
             for us in user_access.clone().into_iter() {
                 let (us_rs, us_actions) = match us {
@@ -397,19 +403,43 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<(), GnapError
                     debug!("{:#?}", us_rs);
                     debug!("{:#?}", us_actions);
                     debug!("{:#?}", ac_actions);
-
+                    let mut approved_actions = Vec::<String>::new();
                     for a in ac_actions.clone().into_iter() {
                         if us_actions.contains(&a) {
                             debug!("Found a match");
-                            return Ok(())
+                            approved_actions.push(a);
                         }
+                    }
+                    if approved_actions.len() > 0 {
+                        let approved_access_request = AccessRequest::Value {
+                            resource_type: ac_rs.clone(),
+                            actions: Some(approved_actions),
+                            locations: ac_loc.clone(),
+                            data_types: ac_type.clone(),
+                        };
+                        approved_access.push(approved_access_request.clone())
                     }
                 }
             }
         }
+        if approved_access.len() > 0 {
+            let approved_token_request = AccessTokenRequest {
+                access: approved_access,
+                label: request.label.clone(),
+                flags: request.flags.clone(),
+            };
+            approved_access_tokens.push(approved_token_request);
+        }
     }
-
-    Err(GnapError::AccessMismatch)
+   
+    Ok(GrantRequest {
+        access_token: approved_access_tokens,
+        subject: grant.subject,
+        client: grant.client,
+        user: grant.user,
+        interact: grant.interact,
+    })
+    //Err(GnapError::AccessMismatch)
 }
 
 #[cfg(test)]
@@ -653,7 +683,7 @@ mod tests {
         "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
         "access": [
             {
-                "type": "sysadmmin",
+                "type": "sysadmin",
                 "actions": [
                     "delete",
                     "readall"
@@ -680,13 +710,15 @@ mod tests {
     }
 
     #[test]
-    fn test_validate_user_access() {
+    fn test_validate_user_access_fail() {
         let user = serde_json::from_str(USER_DATA).unwrap();
         let tx = serde_json::from_str(TX_DATA).unwrap();
 
-        let res = validate_user_access(user, tx);
-        match res {
-            Ok(_) => assert!(false),
+        match validate_user_access(user, tx) {
+            Ok(gr) => {
+                assert_eq!(gr.access_token.len(), 0);
+                assert!(false);
+            },
             Err(_) => assert!(true),
         }
     }
@@ -696,9 +728,12 @@ mod tests {
         let user = serde_json::from_str(USER_DATA).unwrap();
         let tx = serde_json::from_str(TX_DATA_OK).unwrap();
 
-        let res = validate_user_access(user, tx);
-        match res {
-            Ok(_) => assert!(true),
+        match validate_user_access(user, tx) {
+            Ok(gr) => {
+                assert_eq!(gr.access_token.len(), 1);
+                let access = gr.access_token.first().unwrap();
+                assert_eq!(access.access.len(), 2);
+            },
             Err(_) => assert!(false),
         }
     }
@@ -708,15 +743,28 @@ mod tests {
         let user = serde_json::from_str(USER_READ_DATA).unwrap();
         let tx = serde_json::from_str(TX_DATA_OK).unwrap();
 
-        assert!(validate_user_access(user, tx).is_ok())
+        match validate_user_access(user, tx) {
+            Ok(gr) => {
+                assert_eq!(gr.access_token.len(), 1);
+                let access = gr.access_token.first().unwrap();
+                assert_eq!(access.access.len(),1)
+            },
+            _ => assert!(false),
+        }
+
+
     }
 
     #[test]
     fn test_validate_user_delete_access_fail() {
         let user = serde_json::from_str(USER_DELETE_DATA).unwrap();
         let tx = serde_json::from_str(TX_DATA_OK).unwrap();
-
-        assert_eq!(validate_user_access(user, tx).is_ok(), false)
+        match validate_user_access(user, tx) {
+            Ok(gr) => {
+                assert_eq!(gr.access_token.len(),0);
+            },
+            _ => assert!(false)
+        }
     }
 
     #[test]
@@ -724,15 +772,49 @@ mod tests {
         let user = serde_json::from_str(USER_ADMIN_DATA).unwrap();
         let tx = serde_json::from_str(TX_DATA_OK).unwrap();
 
-        assert_eq!(validate_user_access(user, tx).is_ok(), false)
+        match validate_user_access(user, tx) {
+            Ok(gr) => {
+                assert_eq!(gr.access_token.len(),0);
+            },
+            _ => assert!(false)
+        }
+
     }
 
     #[test]
     fn test_tx_with_one_option_ok() {
-        let user = serde_json::from_str(USER_DATA).unwrap();
+        let user: User = serde_json::from_str(USER_DATA).unwrap();
         let tx = serde_json::from_str(TX_DATA_CREATE).unwrap();
 
-        assert!(validate_user_access(user, tx).is_ok())
+        let user_access = user.access.clone().unwrap();
+        let (user_rt, user_loc) = match user_access.first().unwrap() {
+            AccessRequest::Value { resource_type , actions: _, locations , data_types: _ } => (resource_type, locations),
+            _ => return ()
+        };
+
+        let grantrequest = validate_user_access(user, tx).unwrap();
+        let access_token = grantrequest.access_token.first().unwrap();
+        match access_token.access.first().unwrap() {
+            AccessRequest::Value { 
+                resource_type, 
+                actions, 
+                locations, 
+                data_types: _ } => {
+                    let should_be_true = resource_type.eq(user_rt);
+                    assert!(should_be_true);
+                    let act = actions.clone().unwrap();
+                    assert_eq!(act.len(), 1);
+                    let read = act.first().unwrap();
+                    assert_eq!(read, &String::from("read"));
+                    let loc = locations.clone().unwrap().pop().unwrap();
+                    let user_loc = user_loc.clone().unwrap().pop().unwrap();
+                    let true_loc = loc.eq(&user_loc);
+                    assert!(true_loc);
+            }
+            _ => assert!(false)
+        }
+        
+        
     }
 
     #[test]
