@@ -3,7 +3,7 @@ use crate::{
 };
 use errors::ResourceError;
 use log::{debug, trace};
-use model::grant::AccessRequest;
+use model::grant::{AccessRequest, AccessTokenRequest};
 use model::introspect::IntrospectRequest;
 use model::{
     grant::GrantRequest,
@@ -104,25 +104,45 @@ impl ResourceService {
         } else {
             ac.unwrap().request.unwrap()
         };
-
+        debug!("validate access");
         match validate_access_request(&access_request, resource_server) {
             Ok(_) => {
                 let key = Some(String::from("httpsig"));
 
                 let token_active = self.token_service.validate_token(token.id).await.is_ok();
-                let atr = access_request.access_token.first().to_owned();
+                // Selects just the item
+                debug!("K{:#?}", access_request);
+                let atr = match get_access_request(token.label, &access_request) {
+                    Ok(access) => access,
+                    _ => return Err(ResourceError::AccessNotFound)
+                };
+                //let atr = access_request.access_token.first().to_owned();
 
                 let response = InstrospectResponse {
                     active: token_active,
-                    access: Some(atr.unwrap().access.to_owned()),
+                    access: Some(atr.access.to_owned()),
                     key,
                 };
                 println!("{:#?}", response);
                 Ok(response)
             }
-            Err(err) => Err(err),
+            Err(err) => {
+                debug!("Ups");
+                Err(err)
+            },
         }
     }
+}
+
+
+fn get_access_request(token_label: Option<String>, grant_request: &GrantRequest) -> Result<AccessTokenRequest, ResourceError> {
+    
+    for access_token in grant_request.clone().access_token.into_iter() {
+        if access_token.label.eq(&token_label) {
+            return Ok(access_token);
+        }
+    }
+    Err(ResourceError::AccessNotFound)
 }
 
 fn validate_access_request(

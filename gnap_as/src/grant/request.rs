@@ -1,7 +1,7 @@
 use dao::service::Service;
 use errors::GnapError;
 use log::{error, trace, debug};
-use model::tokens::{Token,TokenBuilder};
+use model::tokens::TokenBuilder;
 use model::transaction::GnapTransactionState::*;
 use model::{grant::*, GnapID};
 pub async fn process_request(
@@ -79,11 +79,8 @@ pub async fn process_continue_request(
             // this should be able to handle multiple token.
             // if there are mutiple access_requests, then there should be generated multiple tokens.
             // and it has to have a unique label for each.
-            let t = Token::create(tx_id.clone());
-            let _ = service
-                .store_token(t.clone())
-                .await
-                .expect("Failed to store token");
+            //let t = Token::create(tx_id.clone());
+            
 
             let mut access_tokens = Vec::<AccessToken>::new();
             let grantrequest = tx.request.clone().unwrap();
@@ -93,6 +90,9 @@ pub async fn process_continue_request(
                 let t = TokenBuilder::new(tx_id.clone())
                                             .label(label.clone())
                                             .build();
+                let _ = service.store_token(t.clone())
+                            .await
+                            .expect("Failed to store token");
                 let at = AccessToken {
                     label: label,
                     value: t.access_token.unwrap(),
@@ -105,10 +105,11 @@ pub async fn process_continue_request(
                     expires_in: t.expire,
                     flags: Some(vec![AccessTokenFlag::Bearer]),
                 };
+               
                 access_tokens.push(at)
             }
             //let tokenrequest = grantrequest.access_token.first().unwrap();
-
+            
             let gr = GrantResponse {
                 instance_id: tx.tx_id.clone(),
                 interact: None,
