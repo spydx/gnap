@@ -77,7 +77,7 @@ const users = [
         ]
     },
     {
-        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "id": "6785722c-682a-458b-8465-2986a77abf6a",
         "username": "alice",
         "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
         "access": [
@@ -102,7 +102,7 @@ const users = [
         ]
     },
     {
-        "id": "6785732c-682a-458b-8465-2986a77abf6a",
+        "id": "6785732c-612a-458b-8465-2986a77abf6a",
         "username": "bob",
         "password": "$argon2id$v=19$m=1500,t=2,p=1$SQ7OGnJMWaiUVfo1lOd8Iw$my2NzNZkr3h3phXr0cjtiNPTc2vLIrRmWMHxlDRouCI",
         "access": [
@@ -110,7 +110,6 @@ const users = [
                 "type": "waterbowl-access",
                 "actions": [
                     "read",
-                    "create"
                 ],
                 "locations": [
                     "https://localhost:8080/bowls/"
@@ -256,3 +255,4 @@ db.clients.insertMany(clients);
 db.accounts.insertMany(accounts);
 db.tokens.insertMany(tokens);
 db.resources.insertMany(resources);
+db.users.insertMany(users)
