@@ -1,5 +1,6 @@
 use actix_web::{middleware, App, HttpServer};
 use dotenv::dotenv;
+use actix_cors::Cors;
 
 use log::info;
 
@@ -33,7 +34,7 @@ async fn main() -> std::io::Result<()> {
     let auth_state = auth_state().await;
     let token_state = token_state().await;
     let rs_state = rs_state().await;
-
+    
     // Create the actix-web App instance, with middleware and routes.
     let app = move || {
         App::new()
@@ -50,6 +51,7 @@ async fn main() -> std::io::Result<()> {
             //.configure(routes::token::routes)
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
+            .wrap(Cors::permissive())
     };
 
     // Start http server with the app

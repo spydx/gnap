@@ -69,7 +69,7 @@ impl GnapDB {
             .delete_many(waiting_filter, None)
             .await
             .map_err(GnapError::DatabaseError);
-
+        debug!("Done pruning");
         Ok(())
     }
 
@@ -410,7 +410,7 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<GrantRequest,
                             approved_actions.push(a);
                         }
                     }
-                    if approved_actions.len() > 0 {
+                    if !approved_actions.is_empty() {
                         let approved_access_request = AccessRequest::Value {
                             resource_type: ac_rs.clone(),
                             actions: Some(approved_actions),
@@ -422,7 +422,7 @@ fn validate_user_access(user: User, tx: GnapTransaction) -> Result<GrantRequest,
                 }
             }
         }
-        if approved_access.len() > 0 {
+        if !approved_access.is_empty() {
             let approved_token_request = AccessTokenRequest {
                 access: approved_access,
                 label: request.label.clone(),

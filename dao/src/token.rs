@@ -46,7 +46,7 @@ impl TokenDb {
             .delete_many(null_filter, None)
             .await
             .map_err(TokenError::DatabaseError);
-
+        debug!("Done pruning");
         Ok(())
     }
 

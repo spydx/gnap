@@ -52,7 +52,7 @@ impl TokenBuilder {
     pub fn new(tx: String) -> TokenBuilder {
         let id = Uuid::new_v4().to_string();
         Self {
-            id: id,
+            id,
             access_token: None,
             tx: Some(tx),
             label: None,

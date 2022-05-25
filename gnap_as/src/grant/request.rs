@@ -94,7 +94,7 @@ pub async fn process_continue_request(
                             .await
                             .expect("Failed to store token");
                 let at = AccessToken {
-                    label: label,
+                    label,
                     value: t.access_token.unwrap(),
                     manage: Some(format!(
                         "http://localhost:8000/gnap/token/{}",
